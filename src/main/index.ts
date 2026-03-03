@@ -1,6 +1,6 @@
 import { app, screen, session, net, BrowserWindow } from 'electron'
 import path from 'path'
-import { URL, WINDOW_CONFIG, TOAST_DURATION_MS, APP_USER_AGENT } from './config'
+import { URL, WINDOW_CONFIG, TOAST_DURATION_MS, APP_USER_AGENT } from '../shared/config'
 import { isLoggedIn, onAuthChange } from './auth'
 import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'

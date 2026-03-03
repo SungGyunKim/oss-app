@@ -1,5 +1,4 @@
-const MCS_ORIGIN = import.meta.env.VITE_MCS_ORIGIN
-const JOB_ORIGIN = import.meta.env.VITE_JOB_ORIGIN
+import { URL } from '../../shared/config'
 
 interface MenuItem {
   id: string
@@ -9,16 +8,11 @@ interface MenuItem {
 }
 
 const MENUS: MenuItem[] = [
-  { id: 'book', icon: 'bi-calendar-check', label: 'BOOK', url: `${MCS_ORIGIN}/desktop/book` },
-  { id: 'crm', icon: 'bi-people-fill', label: 'CRM', url: `${MCS_ORIGIN}/desktop/crm` },
-  { id: 'post', icon: 'bi-chat-dots-fill', label: 'POST', url: `${MCS_ORIGIN}/desktop/talk` },
-  { id: 'job', icon: 'bi-briefcase-fill', label: 'JOB', url: `${JOB_ORIGIN}` },
-  {
-    id: 'mypage',
-    icon: 'bi-person-circle',
-    label: 'MY PAGE',
-    url: `${MCS_ORIGIN}/desktop/editInfoHost`
-  }
+  { id: 'book', icon: 'bi-calendar-check', label: 'BOOK', url: URL.BOOK },
+  { id: 'crm', icon: 'bi-people-fill', label: 'CRM', url: URL.CRM },
+  { id: 'post', icon: 'bi-chat-dots-fill', label: 'POST', url: URL.POST },
+  { id: 'job', icon: 'bi-briefcase-fill', label: 'JOB', url: URL.JOB },
+  { id: 'mypage', icon: 'bi-person-circle', label: 'MY PAGE', url: URL.MY_PAGE }
 ]
 
 const menuList = document.getElementById('menu-list')!

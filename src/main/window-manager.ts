@@ -1,6 +1,6 @@
 import { BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
 import path from 'path'
-import { APP_USER_AGENT } from './config'
+import { APP_USER_AGENT } from '../shared/config'
 
 const windows = new Map<string, BrowserWindow>()
 

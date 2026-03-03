@@ -1,6 +1,6 @@
 import { Client } from '@stomp/stompjs'
 import WebSocket from 'ws'
-import { WS_URL } from './config'
+import { WS_URL } from '../shared/config'
 import { getAuthCookie } from './auth'
 
 let stompClient: Client | null = null
