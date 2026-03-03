@@ -15,8 +15,6 @@ function showLogin(): void {
     height: WINDOW_CONFIG.login.height,
     resizable: false
   }, URL.LOGIN)
-
-  win.setMenuBarVisibility(false)
 }
 
 function showMain(): void {
@@ -29,8 +27,6 @@ function showMain(): void {
       webviewTag: true
     }
   })
-
-  win.setMenuBarVisibility(false)
 
   // Load local renderer HTML
   if (process.env.ELECTRON_RENDERER_URL) {

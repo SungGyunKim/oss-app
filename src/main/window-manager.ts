@@ -36,6 +36,8 @@ export function createWindow(
     win.webContents.getUserAgent() + ' ' + APP_USER_AGENT
   )
 
+  win.setMenuBarVisibility(false)
+
   windows.set(id, win)
 
   win.on('closed', () => {
