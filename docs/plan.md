@@ -80,6 +80,32 @@ export const URL = {
 };
 ```
 
+### 개발 서버 호스트
+
+개발 모드(`npm run dev`)에서 renderer dev 서버는 `local.osstem.com`으로 실행된다. 쿠키 도메인(`.osstem.com`)과 일치시키기 위한 설정이다.
+
+**사전 준비**: OS hosts 파일에 아래 항목을 추가해야 한다.
+
+```
+# Windows: C:\Windows\System32\drivers\etc\hosts
+# macOS/Linux: /etc/hosts
+127.0.0.1 local.osstem.com
+```
+
+`electron.vite.config.ts`의 renderer 설정에 `server.host`와 `@vitejs/plugin-basic-ssl` 플러그인이 지정되어 있다.
+
+```ts
+renderer: {
+  server: {
+    host: 'local.osstem.com'
+  },
+  plugins: [basicSsl()],
+  build: { ... }
+}
+```
+
+> **참고**: `@vitejs/plugin-basic-ssl` 플러그인이 자체 서명 인증서를 자동 생성해 HTTPS를 활성화한다. 브라우저에서 인증서 경고가 나타날 수 있으나 개발 환경에서는 무시해도 된다.
+
 ### 빌드 스크립트
 
 패키징은 **electron-builder**를 사용한다.
@@ -274,6 +300,7 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 
 ```ts
 const win = new BrowserWindow({
+  icon: path.join(__dirname, "../../assets/icon.ico"),
   webPreferences: {
     preload: path.join(__dirname, "../preload/index.js"),
     contextIsolation: true,

@@ -1,0 +1,13 @@
+appId: com.osstem.oss-app
+productName: OSS App
+directories:
+  output: release
+win:
+  target: nsis
+  icon: assets/icon.ico
+mac:
+  target: dmg
+  icon: assets/icon.icns
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

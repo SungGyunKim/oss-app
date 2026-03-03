@@ -1,2 +1,6 @@
 .claude
 .omc
+node_modules
+out
+release
+dist

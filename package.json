@@ -1,0 +1,24 @@
+{
+  "name": "oss-app",
+  "version": "1.0.0",
+  "description": "OSS Desktop App - osstem.com/denall.com Electron client",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "dev:stage": "electron-vite dev --mode stage",
+    "build": "electron-vite build",
+    "build:stage": "electron-vite build --mode stage && electron-builder --config electron-builder.stage.yml",
+    "build:production": "electron-vite build --mode production && electron-builder --config electron-builder.production.yml"
+  },
+  "dependencies": {
+    "@stomp/stompjs": "^7.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.13",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "typescript": "^5.7.2"
+  }
+}

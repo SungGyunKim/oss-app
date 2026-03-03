@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'"
+  />
+  <title>Toast</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="toast" class="toast-card">
+    <div class="toast-avatar" id="avatar">
+      <svg viewBox="0 0 40 40" width="40" height="40">
+        <circle cx="20" cy="20" r="20" fill="#4a76a8"/>
+        <text x="20" y="26" text-anchor="middle" fill="#fff" font-size="16" font-family="sans-serif" id="avatar-letter">?</text>
+      </svg>
+    </div>
+    <div class="toast-body">
+      <div class="toast-header">
+        <span class="toast-sender" id="sender"></span>
+        <span class="toast-time" id="time"></span>
+      </div>
+      <div class="toast-message" id="message"></div>
+    </div>
+  </div>
+  <script type="module" src="./renderer.ts"></script>
+</body>
+</html>
