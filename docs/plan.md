@@ -37,11 +37,11 @@ src/
 
 ```ini
 # .env.stage
-VITE_MEMBER_ORIGIN=https://member-stg.denall.com
+VITE_MEMBER_ORIGIN=https://member-stg.osstem.com
 VITE_MCS_ORIGIN=https://mcs-stg.osstem.com
 
 # .env.production
-VITE_MEMBER_ORIGIN=https://member.denall.com
+VITE_MEMBER_ORIGIN=https://member.osstem.com
 VITE_MCS_ORIGIN=https://mcs.osstem.com
 ```
 
@@ -83,6 +83,24 @@ electron-builder      ← 실행 파일로 패키징
   - macOS:   .dmg
 ```
 
+### electron-builder 패키징 설정
+
+```yaml
+appId: com.osstem.oss-app
+productName: OSS App
+directories:
+  output: release
+win:
+  target: nsis
+  icon: assets/icon.ico
+mac:
+  target: dmg
+  icon: assets/icon.icns
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+```
+
 배포는 빌드된 실행 파일을 직접 전달하는 방식(파일 공유, 사내 배포 등)으로 한다.
 
 > **향후 확장**: 배포 규모가 커지면 **electron-updater**를 추가해 앱 시작 시 자동으로 새 버전을 확인하고 업데이트하는 방식으로 전환할 수 있다.
@@ -93,9 +111,9 @@ electron-builder      ← 실행 파일로 패키징
 
 | 사이트                   | URL (운영 기준)                                                    | 용도           |
 | ------------------------ | ------------------------------------------------------------------ | -------------- |
-| 통합회원 (로그인)        | `https://member.denall.com/sso-login?channel-id=Mcs`               | 로그인         |
-| 통합회원 (로그아웃)      | `https://member.denall.com/sso-logout?channel-id=Mcs`              | 로그아웃       |
-| 통합회원 (계정정보 관리) | `https://member.denall.com/profile-password-verify?channel-id=Mcs` | 계정정보 관리  |
+| 통합회원 (로그인)        | `https://member.osstem.com/sso-login?channel-id=Mcs`               | 로그인         |
+| 통합회원 (로그아웃)      | `https://member.osstem.com/sso-logout?channel-id=Mcs`              | 로그아웃       |
+| 통합회원 (계정정보 관리) | `https://member.osstem.com/profile-password-verify?channel-id=Mcs` | 계정정보 관리  |
 | 오스템 채팅              | `https://mcs.osstem.com/mobile/talk`                               | 메인 채팅 화면 |
 
 ## 앱 실행 흐름
@@ -140,6 +158,17 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
   - **로그인 안 됨** → 로그인 화면 열기
 - **우클릭** → 컨텍스트 메뉴 표시
 - **X 버튼** → 창만 숨기고 트레이에 계속 상주 (종료하지 않음)
+- macOS: `app.dock?.hide()`로 독 아이콘 숨김 (트레이 전용 앱)
+- `window-all-closed` 이벤트에서 `app.quit()` 호출하지 않음 — 모든 창이 닫혀도 트레이에 상주
+
+### 트레이 아이콘
+
+플랫폼별 아이콘 파일을 `assets/` 디렉토리에 준비하고, `process.platform`으로 분기 선택한다.
+
+| 플랫폼  | 파일               |
+| ------- | ------------------ |
+| Windows | `assets/icon.ico`  |
+| macOS   | `assets/icon.icns` |
 
 ### 트레이 컨텍스트 메뉴 (로그인 상태별)
 
@@ -154,20 +183,37 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 ### 로그아웃 흐름
 
 1. 트레이 메뉴 → 로그아웃 클릭
-2. `URL.LOGOUT` 호출 (`https://member.denall.com/sso-logout?channel-id=Mcs`)
+2. `URL.LOGOUT` 호출 (`https://member.osstem.com/sso-logout?channel-id=Mcs`)
 3. 모든 웹뷰 종료
 4. 트레이 메뉴를 비로그인 상태로 전환 (로그아웃 메뉴 → 로그인 메뉴)
+
+## 창 관리
+
+`Map<string, BrowserWindow>` 기반 윈도우 레지스트리로 모든 창을 관리한다.
+
+- 로그인, 채팅, 계정정보 관리를 각각 **별도 BrowserWindow**로 생성
+- **중복 방지**: 이미 열린 창이 있으면 새로 생성하지 않고 `focus()` 처리
+- `closed` 이벤트에서 레지스트리에서 자동 제거
+- 로그아웃 시 `closeAllWindows()`로 모든 웹뷰 일괄 종료
+- 계정정보 관리는 트레이 메뉴에서 클릭 시 **새 창으로 열기** (채팅 창과 별도)
 
 ## 웹뷰 설정
 
 아래 설정은 로그인, 채팅, 계정정보 관리 등 **모든 웹뷰에 동일하게 적용**한다.
 
+- `contextIsolation: true` — preload와 렌더러 전역 스코프 격리
+- `nodeIntegration: false` — 렌더러에서 Node.js 접근 차단
 - User-Agent에 `osstem-desktop-app:1.0.0` 강제 삽입
 - `backgroundThrottling: false` — 창이 숨겨진 상태에서도 WebSocket 메시지 처리 지연 방지
+- IPC 입력 검증 — 채널 핸들러에서 타입 체크 + 빈 문자열 방지
+- URL은 소스 코드에 정의된 값만 사용 (사용자 입력 URL 로딩 없음)
 
 ```ts
 const win = new BrowserWindow({
   webPreferences: {
+    preload: path.join(__dirname, "../preload/index.js"),
+    contextIsolation: true,
+    nodeIntegration: false,
     backgroundThrottling: false,
   },
 });
@@ -201,12 +247,21 @@ const win = new BrowserWindow({
 
 ```json
 {
-  "msgId": "19c9defe476oxStoQ",
-  "roomId": "19c9defe40dguFDg",
-  "msgTypeCd": "04",
+  "msgId": "19c2a238601feHAQ",
+  "roomId": "19c2a2376dbNWLa8A",
+  "msgTypeCd": "01",
   "msgText": {
-    "text": "메시지 내용",
-    "buttons": [ ... ]
+    "text": "안녕 ~"
+  },
+  "readCnt": 0,
+  "msgDate": "2026-02-05T04:31:37.089366",
+  "senderProfile": {
+    "memName": "신현주",
+    "intnMemNo": 67706,
+    "memDvCd": "INDV",
+    "memTlNo": "01057799572",
+    "memBirth": "1998-01-15",
+    "memSexDvcd": "F"
   }
 }
 ```
@@ -216,9 +271,9 @@ const win = new BrowserWindow({
 ```ts
 window.osstemDesktopApp.notify({
   profileImage: string, // 보낸 사람 프로필 이미지 URL
-  sender: string, // 보낸 사람 이름
-  sentAt: string, // 보낸 일시
-  message: string, // msgText.text
+  sender: string, // 보낸 사람 이름 (senderProfile.memName)
+  sentAt: string, // 보낸 일시 (msgDate)
+  message: string, // 메시지 (msgText.text)
   roomId: string, // 토스트 클릭 시 해당 채팅방 포커스 이동용
 });
 ```
@@ -279,14 +334,14 @@ osstem.com 웹 서비스를 이용하는 모든 고객
 
 ## 미결정 사항
 
-- [ ] **창 구조** — 로그인 → 채팅 화면 전환 시 같은 BrowserWindow에서 URL만 바뀌는 방식인지, 별도 창으로 분리하는 방식인지
+- [x] ~~**창 구조**~~ — 별도 BrowserWindow 방식으로 확정 (Map 레지스트리로 관리)
 - [ ] **앱 시작 시 창 표시 여부** — 앱 시작 시 바로 창을 표시할지, 트레이에만 상주했다가 더블클릭 시에만 창을 열지
-- [ ] **계정정보 관리 창 처리 방식** — 트레이 메뉴에서 계정정보 관리 클릭 시 새 창으로 여는지, 기존 채팅 창에서 URL이 바뀌는지
+- [x] ~~**계정정보 관리 창 처리 방식**~~ — 새 창으로 열기로 확정
 - [ ] **로그아웃 후 쿠키 처리** — 로그아웃 URL 호출 후 서버에서 쿠키가 삭제되는지, 앱에서도 명시적으로 쿠키를 삭제해야 하는지
 - [ ] **IPC 이벤트 전체 명세** — `notify()` 외에 세션 만료 등 웹 서비스 ↔ 앱 간 주고받는 전체 이벤트 인터페이스 정의 필요
-- [ ] **앱 이름 / 번들 ID** — electron-builder 패키징 시 필요한 앱 이름, 앱 ID(예: `com.osstem.desktop`), 저작권 정보
+- [x] ~~**앱 이름 / 번들 ID**~~ — `com.osstem.oss-app` / `OSS App`으로 확정
 - [ ] **창 기본 크기 / 최소 크기** — BrowserWindow의 초기 width/height 및 최소 크기
-- [ ] **앱 아이콘** — 트레이 아이콘, 앱 아이콘 리소스 (Windows `.ico`, macOS `.icns`)
-- [ ] **보안 설정** — `contextIsolation`, `nodeIntegration` 등 Electron 보안 옵션 명시 필요
+- [x] ~~**앱 아이콘**~~ — 플랫폼별 2종 구조 확정 (`icon.ico`, `icon.icns`)
+- [x] ~~**보안 설정**~~ — `contextIsolation: true`, `nodeIntegration: false` 확정
 - [ ] **개발 환경 기본 URL** — `npm run dev` 실행 시 `.env` 공통 파일의 기본 origin 값 정의 필요
 - [ ] **토스트 표시 시간** — 토스트가 표시되다가 자동으로 사라지기까지의 시간
