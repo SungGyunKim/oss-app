@@ -19,6 +19,14 @@ src/
   main/       ← main 프로세스 (Node.js 환경, TypeScript)
   preload/    ← preload 스크립트 (TypeScript)
   renderer/   ← 렌더러 프로세스 (브라우저 환경, TypeScript)
+    main/         ← 메인 레이아웃 (사이드바 + webview)
+      index.html
+      style.css
+      renderer.ts
+    toast/        ← 토스트 알림
+      index.html
+      style.css
+      renderer.ts
 ```
 
 ## 환경 관리
@@ -36,13 +44,20 @@ src/
 `.env` 파일에는 **도메인(origin)만** 관리하고, 세부 경로(path)는 소스 코드에서 조합한다.
 
 ```ini
+# .env (개발 환경 기본값, .env.stage와 동일)
+VITE_MEMBER_ORIGIN=http://stage-new-member.osstem.com
+VITE_MCS_ORIGIN=https://stage-mcs.osstem.com
+VITE_JOB_ORIGIN=http://stage-job.denall.com
+
 # .env.stage
-VITE_MEMBER_ORIGIN=https://member-stg.osstem.com
-VITE_MCS_ORIGIN=https://mcs-stg.osstem.com
+VITE_MEMBER_ORIGIN=http://stage-new-member.osstem.com
+VITE_MCS_ORIGIN=https://stage-mcs.osstem.com
+VITE_JOB_ORIGIN=http://stage-job.denall.com
 
 # .env.production
 VITE_MEMBER_ORIGIN=https://member.osstem.com
 VITE_MCS_ORIGIN=https://mcs.osstem.com
+VITE_JOB_ORIGIN=https://job.denall.com
 ```
 
 경로는 소스에서 상수로 관리한다.
@@ -51,12 +66,17 @@ VITE_MCS_ORIGIN=https://mcs.osstem.com
 // src/main/config.ts
 const MEMBER_ORIGIN = import.meta.env.VITE_MEMBER_ORIGIN;
 const MCS_ORIGIN = import.meta.env.VITE_MCS_ORIGIN;
+const JOB_ORIGIN = import.meta.env.VITE_JOB_ORIGIN;
 
 export const URL = {
   LOGIN: `${MEMBER_ORIGIN}/sso-login?channel-id=Mcs`,
   LOGOUT: `${MEMBER_ORIGIN}/sso-logout?channel-id=Mcs`,
   PROFILE: `${MEMBER_ORIGIN}/profile-password-verify?channel-id=Mcs`,
+  BOOK: `${MCS_ORIGIN}/desktop/book`,
+  CRM: `${MCS_ORIGIN}/desktop/crm`,
   POST: `${MCS_ORIGIN}/mobile/talk`,
+  JOB: `${JOB_ORIGIN}`,
+  MY_PAGE: `${MCS_ORIGIN}/desktop/editInfoHost`,
 };
 ```
 
@@ -109,30 +129,73 @@ nsis:
 
 아래 URL은 운영 환경 기준이며, 환경(stage/production)에 따라 도메인이 달라진다.
 
-| 사이트                   | URL (운영 기준)                                                    | 용도           |
-| ------------------------ | ------------------------------------------------------------------ | -------------- |
-| 통합회원 (로그인)        | `https://member.osstem.com/sso-login?channel-id=Mcs`               | 로그인         |
-| 통합회원 (로그아웃)      | `https://member.osstem.com/sso-logout?channel-id=Mcs`              | 로그아웃       |
-| 통합회원 (계정정보 관리) | `https://member.osstem.com/profile-password-verify?channel-id=Mcs` | 계정정보 관리  |
-| 오스템 채팅              | `https://mcs.osstem.com/mobile/talk`                               | 메인 채팅 화면 |
+| 사이트                   | URL (운영 기준)                                                    | 용도               |
+| ------------------------ | ------------------------------------------------------------------ | ------------------ |
+| 통합회원 (로그인)        | `https://member.osstem.com/sso-login?channel-id=Mcs`               | 로그인             |
+| 통합회원 (로그아웃)      | `https://member.osstem.com/sso-logout?channel-id=Mcs`              | 로그아웃           |
+| 통합회원 (계정정보 관리) | `https://member.osstem.com/profile-password-verify?channel-id=Mcs` | 계정정보 관리      |
+| BOOK                     | `https://mcs.osstem.com/desktop/book`                              | 사이드바 > BOOK    |
+| CRM                      | `https://mcs.osstem.com/desktop/crm`                               | 사이드바 > CRM     |
+| POST                     | `https://mcs.osstem.com/mobile/talk`                               | 사이드바 > POST    |
+| JOB                      | `https://job.denall.com`                                           | 사이드바 > JOB     |
+| MY PAGE                  | `https://mcs.osstem.com/desktop/editInfoHost`                      | 사이드바 > MY PAGE |
+
+## 메인 화면 레이아웃
+
+로그인 완료 후 표시되는 메인 화면은 Slack 스타일의 좌측 사이드바 + 우측 컨텐츠 영역으로 구성한다.
+
+```
++--------------------------------------------------+
+|  [📅]  |                                          |
+|  [👥]  |        <webview> 컨텐츠 영역              |
+|  [💬]  |        (선택된 메뉴의 URL 로드)            |
+|  [💼]  |                                          |
+|  [👤]  |                                          |
++--------------------------------------------------+
+```
+
+### 사이드바 메뉴 아이콘
+
+[Bootstrap Icons](https://icons.getbootstrap.com/) CDN을 사용한다.
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+/>
+```
+
+| 메뉴    | 용도      | Bootstrap Icon | 클래스                 | 툴팁      |
+| ------- | --------- | -------------- | ---------------------- | --------- |
+| BOOK    | 예약      | calendar-check | `bi bi-calendar-check` | BOOK      |
+| CRM     | 고객관리  | people-fill    | `bi bi-people-fill`    | CRM       |
+| POST    | 채팅      | chat-dots-fill | `bi bi-chat-dots-fill` | POST      |
+| JOB     | 구인/구직 | briefcase-fill | `bi bi-briefcase-fill` | JOB       |
+| MY PAGE | 내 정보   | person-circle  | `bi bi-person-circle`  | MY PAGE   |
+
+- renderer에서 로컬 HTML(`src/renderer/main/index.html`)을 로드
+- 좌측 사이드바: Vanilla HTML/CSS + Bootstrap Icons, 아이콘 버튼 세로 배치
+- 우측 컨텐츠: `<webview>` 태그로 선택된 메뉴의 URL을 동적 로드
+- 메뉴 클릭 시 `webview.src` 변경으로 페이지 전환
+- webPreferences에 `webviewTag: true` 추가
 
 ## 앱 실행 흐름
 
-1. 앱 시작
+1. 앱 시작 → 창 표시 + 트레이 상주
 2. 로그인 상태 확인 → `osstem_token` 쿠키 존재 여부로 판별 (domain: `.denall.com` 또는 `.osstem.com`)
-   - **로그인 됨** → 오스템 채팅 화면으로 이동
-   - **로그인 안 됨** → `URL.LOGIN` 웹뷰 표시 → 로그인 완료 후 오스템 채팅으로 이동
+   - **로그인 됨** → 메인 레이아웃(로컬 HTML) 표시 → POST webview 로드 (기본 메뉴)
+   - **로그인 안 됨** → `URL.LOGIN` 웹뷰 표시 → 로그인 완료 후 메인 레이아웃 표시 → POST webview 로드 (기본 메뉴)
 3. 로그인 세션 유지 시간이 길어 대부분 로그인 상태가 유지됨
 4. 사용 중 세션 만료 시 → 웹 서비스가 `window.osstemDesktopApp` IPC로 앱에 알림 → 로그인 화면으로 전환
 
 ### 로그인 완료 감지
 
-`osstem_token` 쿠키 생성 이벤트를 감지해 로그인 완료로 판단하고 채팅 화면으로 전환한다.
+`osstem_token` 쿠키 생성 이벤트를 감지해 로그인 완료로 판단하고 메인 레이아웃으로 전환한다.
 
 ```ts
 session.defaultSession.cookies.on("changed", (event, cookie, cause) => {
   if (cookie.name === "osstem_token" && cause === "explicit") {
-    // 로그인 완료 → 채팅 화면으로 전환
+    // 로그인 완료 → 메인 레이아웃으로 전환
   }
 });
 ```
@@ -154,7 +217,7 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 
 - 앱은 시스템 트레이에 **상주**
 - **더블클릭** → 로그인 상태 확인
-  - **로그인 됨** → 오스템 채팅 창 열기
+  - **로그인 됨** → 앱 열기 (메인 레이아웃)
   - **로그인 안 됨** → 로그인 화면 열기
 - **우클릭** → 컨텍스트 메뉴 표시
 - **X 버튼** → 창만 숨기고 트레이에 계속 상주 (종료하지 않음)
@@ -172,13 +235,13 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 
 ### 트레이 컨텍스트 메뉴 (로그인 상태별)
 
-| 메뉴 항목        | 비로그인 | 로그인 |
-| ---------------- | :------: | :----: |
-| 로그인           |    O     |   X    |
-| 오스템 채팅 열기 |    X     |   O    |
-| 계정정보 관리    |    X     |   O    |
-| 로그아웃         |    X     |   O    |
-| 종료             |    O     |   O    |
+| 메뉴 항목     | 비로그인 | 로그인 |
+| ------------- | :------: | :----: |
+| 로그인        |    O     |   X    |
+| 앱 열기       |    X     |   O    |
+| 계정정보 관리 |    X     |   O    |
+| 로그아웃      |    X     |   O    |
+| 종료          |    O     |   O    |
 
 ### 로그아웃 흐름
 
@@ -191,11 +254,12 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 
 `Map<string, BrowserWindow>` 기반 윈도우 레지스트리로 모든 창을 관리한다.
 
-- 로그인, 채팅, 계정정보 관리를 각각 **별도 BrowserWindow**로 생성
+- 로그인, 메인(사이드바+webview), 계정정보 관리, 채팅방을 각각 **별도 BrowserWindow**로 생성
 - **중복 방지**: 이미 열린 창이 있으면 새로 생성하지 않고 `focus()` 처리
 - `closed` 이벤트에서 레지스트리에서 자동 제거
 - 로그아웃 시 `closeAllWindows()`로 모든 웹뷰 일괄 종료
-- 계정정보 관리는 트레이 메뉴에서 클릭 시 **새 창으로 열기** (채팅 창과 별도)
+- 계정정보 관리는 트레이 메뉴에서 클릭 시 **새 창으로 열기** (메인 창과 별도)
+- **채팅방 전용 창**: 웹에서 `openPostRoom(roomId)` 호출 시 전용 BrowserWindow를 열고 `${MCS_ORIGIN}/talk/?roomId={roomId}` 로드 (roomId는 main 프로세스에서 문자열 타입 및 형식 검증)
 
 ## 웹뷰 설정
 
@@ -215,16 +279,18 @@ const win = new BrowserWindow({
     contextIsolation: true,
     nodeIntegration: false,
     backgroundThrottling: false,
+    webviewTag: true,
   },
 });
 ```
 
-> **fallback**: `backgroundThrottling: false`로도 WebSocket 메시지 처리가 불안정한 경우, WebSocket 연결을 main 프로세스로 이전하는 방식(방법 3)으로 대체한다. 이 경우 Electron 세션에서 `osstem_token` 쿠키를 추출해 `VITE_MCS_ORIGIN` 기반의 WebSocket URL(`wss://{MCS_ORIGIN}/mcs/ws`)에 직접 연결한다.
+> **참고**: WebSocket 연결은 main 프로세스에서 직접 관리한다. `backgroundThrottling: false`는 webview 내부의 UI 갱신 지연을 방지하기 위한 설정이며, 알림용 WebSocket과는 별개이다.
 
 ## 알림
 
 - **형태**: 커스텀 디자인 토스트 (우측 하단)
-- **트리거**: 오스템 채팅에서 새 메시지 수신 시
+- **트리거**: main 프로세스가 WebSocket으로 새 메시지 수신 시
+- **표시 시간**: 1초 후 자동으로 사라짐
 
 ### 토스트 표시 항목
 
@@ -239,9 +305,14 @@ const win = new BrowserWindow({
 
 해당 채팅방으로 포커스 이동
 
-### 알림 전달 데이터
+### WebSocket 연결 (main 프로세스)
 
-웹 서비스가 WebSocket 메시지를 수신한 뒤, 필요한 값을 추출해 `window.osstemDesktopApp.notify()`로 전달한다.
+main 프로세스에서 직접 WebSocket에 연결해 메시지를 수신한다. 웹 서비스(webview)를 경유하지 않으므로 창이 닫혀 있어도 알림이 동작한다.
+
+- **연결 URL**: `wss://{MCS_ORIGIN}/mcs/ws`
+- **인증**: Electron 세션에서 `osstem_token` 쿠키를 추출해 WebSocket 연결 시 전달
+- **구독**: 연결 완료 후 `/topic/all-message` 토픽을 구독하여 메시지 수신
+- **연결 시점**: 로그인 완료 후 WebSocket 연결, 로그아웃 시 연결 해제
 
 **WebSocket 수신 메시지 구조 (참고)**
 
@@ -266,57 +337,45 @@ const win = new BrowserWindow({
 }
 ```
 
-**앱으로 전달하는 데이터**
+**토스트에 사용하는 데이터**
 
 ```ts
-window.osstemDesktopApp.notify({
-  profileImage: string, // 보낸 사람 프로필 이미지 URL
-  sender: string, // 보낸 사람 이름 (senderProfile.memName)
-  sentAt: string, // 보낸 일시 (msgDate)
-  message: string, // 메시지 (msgText.text)
-  roomId: string, // 토스트 클릭 시 해당 채팅방 포커스 이동용
-});
+// main 프로세스에서 WebSocket 메시지 수신 후 토스트에 표시할 데이터
+interface NotificationData {
+  profileImage: string; // 보낸 사람 프로필 이미지 URL
+  sender: string; // 보낸 사람 이름 (senderProfile.memName)
+  sentAt: string; // 보낸 일시 (msgDate)
+  message: string; // 메시지 (msgText.text)
+  roomId: string; // 토스트 클릭 시 해당 채팅방 포커스 이동용
+}
 ```
 
 ### 알림 흐름
 
-창을 `hide()` 처리해도 `webContents`는 살아있어 WebSocket이 유지된다. 웹 서비스가 메시지를 수신하면 `window.osstemDesktopApp`을 통해 앱으로 알림을 전달한다.
-
 ```
-채팅 웹 서비스 (웹소켓으로 메시지 수신)
-  → User-Agent로 앱 환경 판별
-  → 래핑된 인터페이스 호출 (IPC를 직접 모름)
-  → Electron IPC 통신
+main 프로세스 (WebSocket 직접 연결)
+  → 메시지 수신
+  → 토스트 데이터 추출
   → 커스텀 토스트 알림 표시
-```
-
-```ts
-// 창 숨김 시 webContents 유지
-win.on("close", (e) => {
-  e.preventDefault();
-  win.hide(); // webContents 살아있음 → WebSocket 유지
-});
+  → 토스트 클릭 시 해당 채팅방으로 포커스 이동
 ```
 
 ## 통신 구조 (IPC 래핑)
 
 - Electron ↔ 웹페이지 간 통신은 **IPC** 사용
-- 채팅 웹 서비스 코드에서는 IPC를 직접 알지 못하도록 **래핑**
+- 웹 서비스 코드에서는 IPC를 직접 알지 못하도록 **래핑**
 - preload script에서 래핑 인터페이스를 `window` 객체에 노출
 
 ```ts
-// 채팅 웹 서비스 쪽 (IPC를 모름)
-window.osstemDesktopApp.notify({
-  profileImage: "...",
-  sender: "홍길동",
-  sentAt: "2026-02-10",
-  message: "안녕하세요",
-  roomId: "19c9defe40dguFDg",
-});
+// 웹 서비스 쪽 (IPC를 모름)
+window.osstemDesktopApp.sessionExpired();          // 세션 만료 → 로그인 화면 전환
+window.osstemDesktopApp.openPostRoom(roomId);      // 채팅방 전용 창 열기
 
 // 내부적으로
-// preload: ipcRenderer.send(...) → main process → 토스트 표시
+// preload: ipcRenderer.send(...) → main process → 해당 동작 수행
 ```
+
+> **알림(토스트)**: WebSocket 메시지 수신은 main 프로세스에서 직접 처리하므로 IPC를 거치지 않는다.
 
 ## 사용자 범위
 
@@ -334,14 +393,6 @@ osstem.com 웹 서비스를 이용하는 모든 고객
 
 ## 미결정 사항
 
-- [x] ~~**창 구조**~~ — 별도 BrowserWindow 방식으로 확정 (Map 레지스트리로 관리)
-- [ ] **앱 시작 시 창 표시 여부** — 앱 시작 시 바로 창을 표시할지, 트레이에만 상주했다가 더블클릭 시에만 창을 열지
-- [x] ~~**계정정보 관리 창 처리 방식**~~ — 새 창으로 열기로 확정
 - [ ] **로그아웃 후 쿠키 처리** — 로그아웃 URL 호출 후 서버에서 쿠키가 삭제되는지, 앱에서도 명시적으로 쿠키를 삭제해야 하는지
-- [ ] **IPC 이벤트 전체 명세** — `notify()` 외에 세션 만료 등 웹 서비스 ↔ 앱 간 주고받는 전체 이벤트 인터페이스 정의 필요
-- [x] ~~**앱 이름 / 번들 ID**~~ — `com.osstem.oss-app` / `OSS App`으로 확정
+- [ ] **IPC 이벤트 전체 명세** — 세션 만료 등 웹 서비스 ↔ 앱 간 주고받는 전체 이벤트 인터페이스 정의 필요
 - [ ] **창 기본 크기 / 최소 크기** — BrowserWindow의 초기 width/height 및 최소 크기
-- [x] ~~**앱 아이콘**~~ — 플랫폼별 2종 구조 확정 (`icon.ico`, `icon.icns`)
-- [x] ~~**보안 설정**~~ — `contextIsolation: true`, `nodeIntegration: false` 확정
-- [ ] **개발 환경 기본 URL** — `npm run dev` 실행 시 `.env` 공통 파일의 기본 origin 값 정의 필요
-- [ ] **토스트 표시 시간** — 토스트가 표시되다가 자동으로 사라지기까지의 시간
