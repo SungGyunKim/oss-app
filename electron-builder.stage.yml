@@ -1,5 +1,5 @@
 appId: com.osstem.oss-app
-productName: OSS App (Stage)
+productName: OSSTEM (Stage)
 directories:
   output: release
 win:

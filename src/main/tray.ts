@@ -23,7 +23,7 @@ export function createTray(cbs: TrayCallbacks): Tray {
   const icon = nativeImage.createFromPath(iconPath)
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon)
 
-  tray.setToolTip('OSS App')
+  tray.setToolTip('OSSTEM')
 
   tray.on('double-click', () => {
     callbacks.onOpenApp()
