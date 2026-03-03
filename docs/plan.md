@@ -291,6 +291,7 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 
 아래 설정은 로그인, 채팅, 계정정보 관리 등 **모든 웹뷰에 동일하게 적용**한다.
 
+- `title: 'OSSTEM'` — 모든 창의 타이틀을 "OSSTEM"으로 통일 (트레이 툴팁, electron-builder productName 포함)
 - `menuBarVisible: false` — 모든 창에서 기본 메뉴바(File, Edit, View...) 숨김
 - `contextIsolation: true` — preload와 렌더러 전역 스코프 격리
 - `nodeIntegration: false` — 렌더러에서 Node.js 접근 차단
