@@ -8,7 +8,7 @@ export const URL = {
   PROFILE: `${MEMBER_ORIGIN}/profile-password-verify?channel-id=Mcs`,
   BOOK: `${MCS_ORIGIN}/desktop/book`,
   CRM: `${MCS_ORIGIN}/desktop/crm`,
-  POST: `${MCS_ORIGIN}/mobile/talk`,
+  POST: `${MCS_ORIGIN}/desktop/talk`,
   JOB: `${JOB_ORIGIN}`,
   MY_PAGE: `${MCS_ORIGIN}/desktop/editInfoHost`
 }

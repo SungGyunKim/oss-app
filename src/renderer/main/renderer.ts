@@ -11,7 +11,7 @@ interface MenuItem {
 const MENUS: MenuItem[] = [
   { id: 'book', icon: 'bi-calendar-check', label: 'BOOK', url: `${MCS_ORIGIN}/desktop/book` },
   { id: 'crm', icon: 'bi-people-fill', label: 'CRM', url: `${MCS_ORIGIN}/desktop/crm` },
-  { id: 'post', icon: 'bi-chat-dots-fill', label: 'POST', url: `${MCS_ORIGIN}/mobile/talk` },
+  { id: 'post', icon: 'bi-chat-dots-fill', label: 'POST', url: `${MCS_ORIGIN}/desktop/talk` },
   { id: 'job', icon: 'bi-briefcase-fill', label: 'JOB', url: `${JOB_ORIGIN}` },
   {
     id: 'mypage',
