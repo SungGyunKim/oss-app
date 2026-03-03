@@ -8,7 +8,9 @@
     "dev:stage": "electron-vite dev --mode stage",
     "build": "electron-vite build",
     "build:stage": "electron-vite build --mode stage && electron-builder --config electron-builder.stage.yml",
-    "build:production": "electron-vite build --mode production && electron-builder --config electron-builder.production.yml"
+    "build:production": "electron-vite build --mode production && electron-builder --config electron-builder.production.yml",
+    "format": "prettier --write \"src/**/*.{ts,html,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,css,json}\""
   },
   "dependencies": {
     "@stomp/stompjs": "^7.0.0",
@@ -19,6 +21,7 @@
     "electron": "^33.2.1",
     "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
+    "prettier": "^3.8.1",
     "typescript": "^5.7.2"
   }
 }

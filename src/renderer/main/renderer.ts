@@ -13,7 +13,12 @@ const MENUS: MenuItem[] = [
   { id: 'crm', icon: 'bi-people-fill', label: 'CRM', url: `${MCS_ORIGIN}/desktop/crm` },
   { id: 'post', icon: 'bi-chat-dots-fill', label: 'POST', url: `${MCS_ORIGIN}/mobile/talk` },
   { id: 'job', icon: 'bi-briefcase-fill', label: 'JOB', url: `${JOB_ORIGIN}` },
-  { id: 'mypage', icon: 'bi-person-circle', label: 'MY PAGE', url: `${MCS_ORIGIN}/desktop/editInfoHost` }
+  {
+    id: 'mypage',
+    icon: 'bi-person-circle',
+    label: 'MY PAGE',
+    url: `${MCS_ORIGIN}/desktop/editInfoHost`
+  }
 ]
 
 const menuList = document.getElementById('menu-list')!

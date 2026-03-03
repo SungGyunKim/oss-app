@@ -10,11 +10,15 @@ import { connectWebSocket, disconnectWebSocket, NotificationData } from './webso
 let loggedIn = false
 
 function showLogin(): void {
-  const win = windowManager.createWindow('login', {
-    width: WINDOW_CONFIG.login.width,
-    height: WINDOW_CONFIG.login.height,
-    resizable: false
-  }, URL.LOGIN)
+  const win = windowManager.createWindow(
+    'login',
+    {
+      width: WINDOW_CONFIG.login.width,
+      height: WINDOW_CONFIG.login.height,
+      resizable: false
+    },
+    URL.LOGIN
+  )
 }
 
 function showMain(): void {
@@ -43,11 +47,15 @@ function showMain(): void {
 }
 
 function showProfile(): void {
-  windowManager.createWindow('profile', {
-    width: WINDOW_CONFIG.profile.width,
-    height: WINDOW_CONFIG.profile.height,
-    resizable: false
-  }, URL.PROFILE)
+  windowManager.createWindow(
+    'profile',
+    {
+      width: WINDOW_CONFIG.profile.width,
+      height: WINDOW_CONFIG.profile.height,
+      resizable: false
+    },
+    URL.PROFILE
+  )
 }
 
 function openPostRoom(roomId: string): void {
@@ -55,10 +63,14 @@ function openPostRoom(roomId: string): void {
   const chatUrl = `${MCS_ORIGIN}/talk/?roomId=${roomId}`
   const windowId = `chat-${roomId}`
 
-  windowManager.createWindow(windowId, {
-    width: WINDOW_CONFIG.chat.width,
-    height: WINDOW_CONFIG.chat.height
-  }, chatUrl)
+  windowManager.createWindow(
+    windowId,
+    {
+      width: WINDOW_CONFIG.chat.width,
+      height: WINDOW_CONFIG.chat.height
+    },
+    chatUrl
+  )
 }
 
 function showToast(data: NotificationData): void {

@@ -29,9 +29,7 @@ export interface NotificationData {
   roomId: string
 }
 
-export async function connectWebSocket(
-  onMessage: (data: NotificationData) => void
-): Promise<void> {
+export async function connectWebSocket(onMessage: (data: NotificationData) => void): Promise<void> {
   if (stompClient?.active) return
 
   const cookie = await getAuthCookie()
