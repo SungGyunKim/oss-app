@@ -5,7 +5,7 @@ import { isLoggedIn, onAuthChange } from './auth'
 import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
 import { registerIpcHandlers } from './ipc-handlers'
-import { connectWebSocket, disconnectWebSocket, NotificationData } from './websocket'
+import { connectWebSocket, disconnectWebSocket, NotificationData } from './post-websocket'
 
 let loggedIn = false
 

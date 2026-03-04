@@ -1,6 +1,6 @@
 import { Client } from '@stomp/stompjs'
 import WebSocket from 'ws'
-import { WS_URL } from '../shared/config'
+import { WS_POST_URL } from '../shared/config'
 import { getAuthCookie, getAuthToken } from './auth'
 
 let stompClient: Client | null = null
@@ -37,7 +37,7 @@ export async function connectWebSocket(onMessage: (data: NotificationData) => vo
 
   stompClient = new Client({
     webSocketFactory: () => {
-      return new WebSocket(WS_URL, {
+      return new WebSocket(WS_POST_URL, {
         headers: { Cookie: cookie }
       }) as unknown as globalThis.WebSocket
     },
