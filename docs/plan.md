@@ -42,13 +42,14 @@ src/
 .env.production    ← 운영 환경
 ```
 
-`.env` 파일에는 **도메인(origin)만** 관리하고, 세부 경로(path)는 소스 코드에서 조합한다.
+`.env` 파일에는 **도메인(origin)과 개발 옵션**을 관리하고, 세부 경로(path)는 소스 코드에서 조합한다.
 
 ```ini
 # .env (개발 환경 기본값, .env.stage와 동일)
 VITE_MEMBER_ORIGIN=http://stage-new-member.denall.com
 VITE_MCS_ORIGIN=https://stage-mcs.denall.com
 VITE_JOB_ORIGIN=http://stage-job.denall.com
+VITE_OPEN_WEBVIEW_DEVTOOLS=false
 
 # .env.stage
 VITE_MEMBER_ORIGIN=http://stage-new-member.denall.com
@@ -60,6 +61,13 @@ VITE_MEMBER_ORIGIN=https://member.denall.com
 VITE_MCS_ORIGIN=https://mcs.denall.com
 VITE_JOB_ORIGIN=https://job.denall.com
 ```
+
+| 변수                         | 설명                                      |
+| ---------------------------- | ----------------------------------------- |
+| `VITE_MEMBER_ORIGIN`         | 통합회원 서비스 도메인                    |
+| `VITE_MCS_ORIGIN`            | MCS 서비스 도메인                         |
+| `VITE_JOB_ORIGIN`            | JOB 서비스 도메인                         |
+| `VITE_OPEN_WEBVIEW_DEVTOOLS` | `true`이면 webview DevTools 자동 열기     |
 
 경로는 소스에서 상수로 관리한다.
 

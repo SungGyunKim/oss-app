@@ -50,5 +50,12 @@ MENUS.forEach((menu) => {
   menuList.appendChild(btn)
 })
 
+// Open webview DevTools when enabled via env
+if (import.meta.env.VITE_OPEN_WEBVIEW_DEVTOOLS === 'true') {
+  webview.addEventListener('dom-ready', () => {
+    webview.openDevTools()
+  })
+}
+
 // Default to POST
 setActive('post')
