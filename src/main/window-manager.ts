@@ -8,8 +8,7 @@ const defaultWebPreferences: Electron.WebPreferences = {
   preload: path.join(__dirname, '../preload/index.js'),
   contextIsolation: true,
   nodeIntegration: false,
-  backgroundThrottling: false,
-  webviewTag: true
+  backgroundThrottling: false
 }
 
 export function createWindow(

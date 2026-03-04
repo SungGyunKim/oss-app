@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import { ToastData } from '../shared/types'
 
 contextBridge.exposeInMainWorld('osstemDesktopApp', {
   sessionExpired: (): void => {
@@ -8,7 +9,10 @@ contextBridge.exposeInMainWorld('osstemDesktopApp', {
     if (typeof roomId !== 'string' || roomId.trim() === '') return
     ipcRenderer.send('open-post-room', roomId)
   },
-  onToastData: (callback: (data: unknown) => void): void => {
+  onToastData: (callback: (data: ToastData) => void): void => {
     ipcRenderer.on('toast-data', (_event, data) => callback(data))
+  },
+  toastClicked: (): void => {
+    ipcRenderer.send('toast-clicked')
   }
 })

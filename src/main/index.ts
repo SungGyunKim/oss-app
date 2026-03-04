@@ -1,16 +1,17 @@
-import { app, screen, session, net, BrowserWindow } from 'electron'
+import { app, screen, session, net, ipcMain, BrowserWindow } from 'electron'
 import path from 'path'
-import { URL, WINDOW_CONFIG, TOAST_DURATION_MS, APP_USER_AGENT } from '../shared/config'
+import { URL, MCS_ORIGIN, WINDOW_CONFIG, TOAST_DURATION_MS, APP_USER_AGENT } from '../shared/config'
 import { isLoggedIn, onAuthChange } from './auth'
 import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
 import { registerIpcHandlers } from './ipc-handlers'
-import { connectWebSocket, disconnectWebSocket, ToastData } from './post-websocket'
+import { connectWebSocket, disconnectWebSocket } from './post-websocket'
+import { ToastData } from '../shared/types'
 
 let loggedIn = false
 
 function showLogin(): void {
-  const win = windowManager.createWindow(
+  windowManager.createWindow(
     'login',
     {
       width: WINDOW_CONFIG.login.width,
@@ -59,7 +60,6 @@ function showProfile(): void {
 }
 
 function showPostRoom(roomId: string): void {
-  const MCS_ORIGIN = import.meta.env.VITE_MCS_ORIGIN
   const postRoomUrl = `${MCS_ORIGIN}/talk/?roomId=${roomId}`
   const windowId = `chat-${roomId}`
 
@@ -105,13 +105,14 @@ function showToast(data: ToastData): void {
     win.webContents.postMessage('toast-data', data)
   })
 
-  win.webContents.on('page-title-updated', (_e, title) => {
-    if (title === 'toast-clicked') {
-      clicked = true
-    }
-  })
+  const onToastClicked = (): void => {
+    clicked = true
+    if (!win.isDestroyed()) win.close()
+  }
+  ipcMain.on('toast-clicked', onToastClicked)
 
   win.on('closed', () => {
+    ipcMain.removeListener('toast-clicked', onToastClicked)
     if (clicked) {
       showPostRoom(data.roomId)
     }
@@ -136,9 +137,7 @@ async function handleLogin(): Promise<void> {
   showMain()
 
   // Connect WebSocket for notifications
-  await connectWebSocket((data) => {
-    showToast(data)
-  })
+  await connectWebSocket(showToast)
 }
 
 async function handleLogout(): Promise<void> {
@@ -208,7 +207,7 @@ app.whenReady().then(async () => {
 
   if (loggedIn) {
     showMain()
-    await connectWebSocket((data) => showToast(data))
+    await connectWebSocket(showToast)
   } else {
     showLogin()
   }

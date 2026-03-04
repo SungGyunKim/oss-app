@@ -1,5 +1,5 @@
 const MEMBER_ORIGIN = import.meta.env.VITE_MEMBER_ORIGIN
-const MCS_ORIGIN = import.meta.env.VITE_MCS_ORIGIN
+export const MCS_ORIGIN = import.meta.env.VITE_MCS_ORIGIN
 const JOB_ORIGIN = import.meta.env.VITE_JOB_ORIGIN
 
 export const URL = {

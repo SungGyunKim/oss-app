@@ -1,6 +1,7 @@
 import { Client } from '@stomp/stompjs'
 import WebSocket from 'ws'
 import { WS_POST_URL } from '../shared/config'
+import { ToastData } from '../shared/types'
 import { getAuthCookie, getAuthToken } from './auth'
 
 let stompClient: Client | null = null
@@ -19,13 +20,6 @@ export interface ChatMessage {
     custId?: string
     memDvCd: string
   }
-}
-
-export interface ToastData {
-  sender: string
-  sentAt: string
-  message: string
-  roomId: string
 }
 
 export async function connectWebSocket(onMessage: (data: ToastData) => void): Promise<void> {

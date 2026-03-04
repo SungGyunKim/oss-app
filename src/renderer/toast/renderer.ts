@@ -1,9 +1,4 @@
-interface ToastData {
-  sender: string
-  sentAt: string
-  message: string
-  roomId: string
-}
+import { ToastData } from '../../shared/types'
 
 const senderEl = document.getElementById('sender')!
 const timeEl = document.getElementById('time')!
@@ -12,7 +7,10 @@ const avatarLetter = document.getElementById('avatar-letter')!
 const toast = document.getElementById('toast')!
 
 // Receive data from main process via preload (ipcRenderer)
-declare const osstemDesktopApp: { onToastData: (cb: (data: ToastData) => void) => void }
+declare const osstemDesktopApp: {
+  onToastData: (cb: (data: ToastData) => void) => void
+  toastClicked: () => void
+}
 
 osstemDesktopApp.onToastData((data) => {
   console.log('[Toast] Received:', data)
@@ -34,7 +32,5 @@ osstemDesktopApp.onToastData((data) => {
 })
 
 toast.addEventListener('click', () => {
-  // Signal main process that toast was clicked
-  document.title = 'toast-clicked'
-  window.close()
+  osstemDesktopApp.toastClicked()
 })
