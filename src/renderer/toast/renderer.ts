@@ -11,27 +11,26 @@ const messageEl = document.getElementById('message')!
 const avatarLetter = document.getElementById('avatar-letter')!
 const toast = document.getElementById('toast')!
 
-// Receive data from main process via ipcRenderer port (webContents.postMessage)
-window.addEventListener('message', (event: MessageEvent) => {
-  if (!event.ports?.[0]) return
-  const port = event.ports[0]
-  port.onmessage = (e: MessageEvent<ToastData>) => {
-    const { sender, sentAt, message } = e.data
-    senderEl.textContent = sender
-    avatarLetter.textContent = sender.charAt(0)
-    messageEl.textContent = message
+// Receive data from main process via preload (ipcRenderer)
+declare const osstemDesktopApp: { onToastData: (cb: (data: ToastData) => void) => void }
 
-    try {
-      const date = new Date(sentAt)
-      timeEl.textContent = date.toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    } catch {
-      timeEl.textContent = ''
-    }
+osstemDesktopApp.onToastData((data) => {
+  console.log('[Toast] Received:', data)
+  if (!data?.sender) return
+
+  senderEl.textContent = data.sender
+  avatarLetter.textContent = data.sender.charAt(0)
+  messageEl.textContent = data.message
+
+  try {
+    const date = new Date(data.sentAt)
+    timeEl.textContent = date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch {
+    timeEl.textContent = ''
   }
-  port.start()
 })
 
 toast.addEventListener('click', () => {
