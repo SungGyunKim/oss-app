@@ -5,7 +5,7 @@ import { isLoggedIn, onAuthChange } from './auth'
 import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
 import { registerIpcHandlers } from './ipc-handlers'
-import { connectWebSocket, disconnectWebSocket, NotificationData } from './post-websocket'
+import { connectWebSocket, disconnectWebSocket, ToastData } from './post-websocket'
 
 let loggedIn = false
 
@@ -58,9 +58,9 @@ function showProfile(): void {
   )
 }
 
-function openPostRoom(roomId: string): void {
+function showPostRoom(roomId: string): void {
   const MCS_ORIGIN = import.meta.env.VITE_MCS_ORIGIN
-  const chatUrl = `${MCS_ORIGIN}/talk/?roomId=${roomId}`
+  const postRoomUrl = `${MCS_ORIGIN}/talk/?roomId=${roomId}`
   const windowId = `chat-${roomId}`
 
   windowManager.createWindow(
@@ -69,11 +69,11 @@ function openPostRoom(roomId: string): void {
       width: WINDOW_CONFIG.chat.width,
       height: WINDOW_CONFIG.chat.height
     },
-    chatUrl
+    postRoomUrl
   )
 }
 
-function showToast(data: NotificationData): void {
+function showToast(data: ToastData): void {
   const { workArea } = screen.getPrimaryDisplay()
   let clicked = false
 
@@ -113,7 +113,7 @@ function showToast(data: NotificationData): void {
 
   win.on('closed', () => {
     if (clicked) {
-      openPostRoom(data.roomId)
+      showPostRoom(data.roomId)
     }
   })
 
@@ -170,7 +170,7 @@ app.whenReady().then(async () => {
   // Register IPC handlers
   registerIpcHandlers({
     onSessionExpired: handleSessionExpired,
-    onOpenPostRoom: openPostRoom
+    onShowPostRoom: showPostRoom
   })
 
   // Create system tray
