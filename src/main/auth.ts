@@ -18,11 +18,21 @@ export function onAuthChange(callback: (loggedIn: boolean) => void): void {
   })
 }
 
-export async function getAuthCookie(): Promise<string | undefined> {
+export async function getAuthToken(): Promise<string | undefined> {
   const [denallCookies, osstemCookies] = await Promise.all([
     session.defaultSession.cookies.get({ domain: '.denall.com' }),
     session.defaultSession.cookies.get({ domain: '.osstem.com' })
   ])
   const token = [...denallCookies, ...osstemCookies].find((c) => c.name === TOKEN_NAME)
-  return token ? `${token.name}=${token.value}` : undefined
+  return token?.value
+}
+
+export async function getAuthCookie(): Promise<string | undefined> {
+  const [denallCookies, osstemCookies] = await Promise.all([
+    session.defaultSession.cookies.get({ domain: '.denall.com' }),
+    session.defaultSession.cookies.get({ domain: '.osstem.com' })
+  ])
+  const all = [...denallCookies, ...osstemCookies]
+  if (!all.some((c) => c.name === TOKEN_NAME)) return undefined
+  return all.map((c) => `${c.name}=${c.value}`).join('; ')
 }

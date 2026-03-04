@@ -17,7 +17,7 @@ export const WS_URL = `${MCS_ORIGIN.replace(/^http/, 'ws')}/mcs/ws`
 
 export const APP_USER_AGENT = 'osstem-desktop-app:1.0.0'
 
-export const TOAST_DURATION_MS = 1000
+export const TOAST_DURATION_MS = 5000
 
 export const WINDOW_CONFIG = {
   main: { width: 1200, height: 800, minWidth: 800, minHeight: 600 },

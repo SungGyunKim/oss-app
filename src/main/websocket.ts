@@ -1,24 +1,23 @@
 import { Client } from '@stomp/stompjs'
 import WebSocket from 'ws'
 import { WS_URL } from '../shared/config'
-import { getAuthCookie } from './auth'
+import { getAuthCookie, getAuthToken } from './auth'
 
 let stompClient: Client | null = null
 
 export interface ChatMessage {
   msgId: string
   roomId: string
+  roomName?: string
+  roomTypeCd?: string
   msgTypeCd: string
   msgText: { text: string }
-  readCnt: number
   msgDate: string
   senderProfile: {
     memName: string
     intnMemNo: number
+    custId?: string
     memDvCd: string
-    memTlNo: string
-    memBirth: string
-    memSexDvcd: string
   }
 }
 
@@ -33,7 +32,8 @@ export async function connectWebSocket(onMessage: (data: NotificationData) => vo
   if (stompClient?.active) return
 
   const cookie = await getAuthCookie()
-  if (!cookie) return
+  const token = await getAuthToken()
+  if (!cookie || !token) return
 
   stompClient = new Client({
     webSocketFactory: () => {
@@ -41,9 +41,17 @@ export async function connectWebSocket(onMessage: (data: NotificationData) => vo
         headers: { Cookie: cookie }
       }) as unknown as globalThis.WebSocket
     },
+    connectHeaders: {
+      memId: '10523'
+    },
     reconnectDelay: 5000,
+    debug: (msg) => console.log('[STOMP]', msg),
+    onWebSocketError: (err) => console.error('[WS Error]', err),
+    onStompError: (frame) => console.error('[STOMP Error]', frame.headers.message, frame.body),
     onConnect: () => {
-      stompClient!.subscribe('/topic/all-message', (frame) => {
+      console.log('[STOMP] Connected successfully')
+      stompClient!.subscribe('/topic/all-message/10523', (frame) => {
+        console.log('[STOMP] Received message:', frame.body)
         try {
           const msg: ChatMessage = JSON.parse(frame.body)
           onMessage({
@@ -52,8 +60,8 @@ export async function connectWebSocket(onMessage: (data: NotificationData) => vo
             message: msg.msgText.text,
             roomId: msg.roomId
           })
-        } catch {
-          // ignore malformed messages
+        } catch (err) {
+          console.error('[STOMP] Failed to parse message:', err)
         }
       })
     }

@@ -18,6 +18,7 @@ osstem.com과 denall.com 서비스들을 Electron 기반 데스크톱 앱으로 
 src/
   main/       ← main 프로세스 (Node.js 환경, TypeScript)
   preload/    ← preload 스크립트 (TypeScript)
+  shared/     ← main/renderer 공용 모듈 (config 등)
   renderer/   ← 렌더러 프로세스 (브라우저 환경, TypeScript)
     main/         ← 메인 레이아웃 (사이드바 + webview)
       index.html
@@ -63,7 +64,7 @@ VITE_JOB_ORIGIN=https://job.denall.com
 경로는 소스에서 상수로 관리한다.
 
 ```ts
-// src/main/config.ts
+// src/shared/config.ts
 const MEMBER_ORIGIN = import.meta.env.VITE_MEMBER_ORIGIN;
 const MCS_ORIGIN = import.meta.env.VITE_MCS_ORIGIN;
 const JOB_ORIGIN = import.meta.env.VITE_JOB_ORIGIN;
@@ -87,10 +88,13 @@ export const URL = {
 ```json
 {
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "electron-vite dev -- --inspect",
     "dev:stage": "electron-vite dev --mode stage",
+    "build": "electron-vite build",
     "build:stage": "electron-vite build --mode stage && electron-builder --config electron-builder.stage.yml",
-    "build:production": "electron-vite build --mode production && electron-builder --config electron-builder.production.yml"
+    "build:production": "electron-vite build --mode production && electron-builder --config electron-builder.production.yml",
+    "format": "prettier --write \"src/**/*.{ts,html,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,css,json}\""
   }
 }
 ```
@@ -293,7 +297,7 @@ const win = new BrowserWindow({
 
 - **형태**: 커스텀 디자인 토스트 (우측 하단)
 - **트리거**: main 프로세스가 WebSocket으로 새 메시지 수신 시
-- **표시 시간**: 1초 후 자동으로 사라짐
+- **표시 시간**: 5초 후 자동으로 사라짐
 
 ### 토스트 표시 항목
 
@@ -313,30 +317,29 @@ const win = new BrowserWindow({
 main 프로세스에서 직접 WebSocket에 연결해 메시지를 수신한다. 웹 서비스(webview)를 경유하지 않으므로 창이 닫혀 있어도 알림이 동작한다.
 
 - **연결 URL**: `wss://{MCS_ORIGIN}/mcs/ws`
-- **인증**: Electron 세션에서 `osstem_token` 쿠키를 추출해 WebSocket 연결 시 전달
-- **구독**: 연결 완료 후 `/topic/all-message` 토픽을 구독하여 메시지 수신
+- **인증**: Electron 세션에서 해당 도메인의 모든 쿠키를 추출해 WebSocket 핸드셰이크 헤더로 전달하고, STOMP CONNECT 프레임에 `memId`를 포함
+- **구독**: 연결 완료 후 `/topic/all-message/{memId}` 토픽을 구독하여 메시지 수신
 - **연결 시점**: 로그인 완료 후 WebSocket 연결, 로그아웃 시 연결 해제
 
 **WebSocket 수신 메시지 구조 (참고)**
 
 ```json
 {
-  "msgId": "19c2a238601feHAQ",
-  "roomId": "19c2a2376dbNWLa8A",
+  "msgId": "19cb69b15959mks6Q",
+  "roomId": "19c4b333fc1oB2IEg",
+  "roomName": "샘플",
   "msgTypeCd": "01",
   "msgText": {
-    "text": "안녕 ~"
+    "text": "123123"
   },
-  "readCnt": 0,
-  "msgDate": "2026-02-05T04:31:37.089366",
+  "msgDate": "2026-03-04T11:09:02.835812412",
   "senderProfile": {
-    "memName": "신현주",
-    "intnMemNo": 67706,
-    "memDvCd": "INDV",
-    "memTlNo": "01057799572",
-    "memBirth": "1998-01-15",
-    "memSexDvcd": "F"
-  }
+    "memName": "홍길동",
+    "intnMemNo": 0,
+    "custId": "10523",
+    "memDvCd": "BIZMN"
+  },
+  "roomTypeCd": "02"
 }
 ```
 
@@ -345,7 +348,6 @@ main 프로세스에서 직접 WebSocket에 연결해 메시지를 수신한다.
 ```ts
 // main 프로세스에서 WebSocket 메시지 수신 후 토스트에 표시할 데이터
 interface NotificationData {
-  profileImage: string; // 보낸 사람 프로필 이미지 URL
   sender: string; // 보낸 사람 이름 (senderProfile.memName)
   sentAt: string; // 보낸 일시 (msgDate)
   message: string; // 메시지 (msgText.text)
