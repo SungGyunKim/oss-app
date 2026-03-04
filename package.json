@@ -4,7 +4,7 @@
   "description": "OSS Desktop App - osstem.com/denall.com Electron client",
   "main": "./out/main/index.js",
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "electron-vite dev -- --inspect",
     "dev:stage": "electron-vite dev --mode stage",
     "build": "electron-vite build",
     "build:stage": "electron-vite build --mode stage && electron-builder --config electron-builder.stage.yml",

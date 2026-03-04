@@ -394,6 +394,26 @@ denall.com 웹 서비스를 이용하는 모든 고객
 }
 ```
 
+## 디버깅
+
+### Main 프로세스 디버깅
+
+`npm run dev` 실행 시 `--inspect` 플래그가 포함되어 있어 Node.js 디버거가 자동으로 활성화된다.
+
+1. `npm run dev`로 앱 실행
+2. Chrome 브라우저에서 `chrome://inspect` 접속
+3. **Remote Target** 목록에 Electron 프로세스가 표시되면 **inspect** 클릭
+4. DevTools에서 소스 코드 확인, 브레이크포인트 설정, `debugger` 문 사용 가능
+
+> **참고**: `console.log()`는 별도 도구 없이 터미널에 바로 출력되므로 간단한 값 확인에 유용하다.
+
+### Renderer 프로세스 디버깅
+
+renderer 프로세스는 브라우저 환경이므로 일반 웹 개발과 동일하게 디버깅한다.
+
+1. 앱 실행 후 `F12` 또는 `Ctrl+Shift+I`로 DevTools 열기
+2. `debugger` 문, 브레이크포인트, `console.log()` 모두 사용 가능
+
 ## 미결정 사항
 
 - [ ] **로그아웃 후 쿠키 처리** — 로그아웃 URL 호출 후 서버에서 쿠키가 삭제되는지, 앱에서도 명시적으로 쿠키를 삭제해야 하는지
