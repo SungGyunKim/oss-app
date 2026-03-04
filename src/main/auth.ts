@@ -2,12 +2,17 @@ import { session } from 'electron'
 
 const TOKEN_NAME = 'osstem_token'
 
-export async function isLoggedIn(): Promise<boolean> {
+async function getAllCookies(): Promise<Electron.Cookie[]> {
   const [denallCookies, osstemCookies] = await Promise.all([
     session.defaultSession.cookies.get({ domain: '.denall.com' }),
     session.defaultSession.cookies.get({ domain: '.osstem.com' })
   ])
-  return [...denallCookies, ...osstemCookies].some((c) => c.name === TOKEN_NAME)
+  return [...denallCookies, ...osstemCookies]
+}
+
+export async function isLoggedIn(): Promise<boolean> {
+  const cookies = await getAllCookies()
+  return cookies.some((c) => c.name === TOKEN_NAME)
 }
 
 export function onAuthChange(callback: (loggedIn: boolean) => void): void {
@@ -19,20 +24,12 @@ export function onAuthChange(callback: (loggedIn: boolean) => void): void {
 }
 
 export async function getAuthToken(): Promise<string | undefined> {
-  const [denallCookies, osstemCookies] = await Promise.all([
-    session.defaultSession.cookies.get({ domain: '.denall.com' }),
-    session.defaultSession.cookies.get({ domain: '.osstem.com' })
-  ])
-  const token = [...denallCookies, ...osstemCookies].find((c) => c.name === TOKEN_NAME)
-  return token?.value
+  const cookies = await getAllCookies()
+  return cookies.find((c) => c.name === TOKEN_NAME)?.value
 }
 
 export async function getAuthCookie(): Promise<string | undefined> {
-  const [denallCookies, osstemCookies] = await Promise.all([
-    session.defaultSession.cookies.get({ domain: '.denall.com' }),
-    session.defaultSession.cookies.get({ domain: '.osstem.com' })
-  ])
-  const all = [...denallCookies, ...osstemCookies]
-  if (!all.some((c) => c.name === TOKEN_NAME)) return undefined
-  return all.map((c) => `${c.name}=${c.value}`).join('; ')
+  const cookies = await getAllCookies()
+  if (!cookies.some((c) => c.name === TOKEN_NAME)) return undefined
+  return cookies.map((c) => `${c.name}=${c.value}`).join('; ')
 }

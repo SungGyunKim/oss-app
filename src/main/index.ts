@@ -154,8 +154,8 @@ async function handleLogout(): Promise<void> {
   showLogin()
 }
 
-function handleSessionExpired(): void {
-  handleLogout()
+async function handleSessionExpired(): Promise<void> {
+  await handleLogout()
 }
 
 app.whenReady().then(async () => {

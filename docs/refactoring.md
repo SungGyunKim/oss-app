@@ -10,27 +10,27 @@
 
 ## High
 
-- [ ] **`index.ts:158` — `handleSessionExpired`에서 `await` 누락**
+- [x] **`index.ts:158` — `handleSessionExpired`에서 `await` 누락**
   `handleLogout`이 `async`인데 `await` 없이 호출. 에러가 미처리됨.
 
-- [ ] **`auth.ts` — 쿠키 조회 로직 3회 중복**
+- [x] **`auth.ts` — 쿠키 조회 로직 3회 중복**
   `isLoggedIn`, `getAuthToken`, `getAuthCookie`가 동일한 `Promise.all` 패턴 반복. `getAllCookies()` 헬퍼로 추출.
 
 ## Medium
 
-- [ ] **`ToastData` 인터페이스 3곳에 중복 정의**
+- [x] **`ToastData` 인터페이스 3곳에 중복 정의**
   `post-websocket.ts`, `toast/renderer.ts`, preload에서는 `unknown`으로 타입 소실. `src/shared/types.ts`로 통합.
 
-- [ ] **`toast/renderer.ts:38` — `document.title` 변경을 IPC 대용으로 사용**
+- [x] **`toast/renderer.ts:38` — `document.title` 변경을 IPC 대용으로 사용**
   `ipcRenderer.send('toast-clicked')`가 올바른 패턴. preload에 `toastClicked()` 추가.
 
-- [ ] **`window-manager.ts` — `webviewTag: true`가 모든 창에 기본 적용**
+- [x] **`window-manager.ts` — `webviewTag: true`가 모든 창에 기본 적용**
   메인 창에서만 필요. 보안상 기본값에서 제거.
 
-- [ ] **`index.ts:62` — `showPostRoom`에서 `import.meta.env` 직접 접근**
+- [x] **`index.ts:62` — `showPostRoom`에서 `import.meta.env` 직접 접근**
   config.ts 패턴과 불일치. config.ts에 `getPostRoomUrl(roomId)` 추가.
 
-- [ ] **`connectWebSocket` 콜백 래퍼 불필요**
+- [x] **`connectWebSocket` 콜백 래퍼 불필요**
   `(data) => showToast(data)` → `showToast` 직접 전달.
 
 ## Low
