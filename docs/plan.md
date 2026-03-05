@@ -281,7 +281,7 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 - `menuBarVisible: false` — 모든 창에서 기본 메뉴바(File, Edit, View...) 숨김
 - `contextIsolation: true` — preload와 렌더러 전역 스코프 격리
 - `nodeIntegration: false` — 렌더러에서 Node.js 접근 차단
-- User-Agent에 `osstem-desktop-app:1.0.0` 강제 삽입
+- User-Agent에 `OsstemDesktopApp/1.0.0` 자동 포함 (Electron이 package.json name/version 기반으로 삽입)
 - `backgroundThrottling: false` — 창이 숨겨진 상태에서도 WebSocket 메시지 처리 지연 방지
 - IPC 입력 검증 — 채널 핸들러에서 타입 체크 + 빈 문자열 방지
 - URL은 소스 코드에 정의된 값만 사용 (사용자 입력 URL 로딩 없음)
