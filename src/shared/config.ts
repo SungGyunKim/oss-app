@@ -1,4 +1,4 @@
-const MEMBER_ORIGIN = import.meta.env.VITE_MEMBER_ORIGIN
+export const MEMBER_ORIGIN = import.meta.env.VITE_MEMBER_ORIGIN
 export const MCS_ORIGIN = import.meta.env.VITE_MCS_ORIGIN
 const JOB_ORIGIN = import.meta.env.VITE_JOB_ORIGIN
 
@@ -14,6 +14,10 @@ export const URL = {
 }
 
 export const WS_POST_URL = `${MCS_ORIGIN.replace(/^http/, 'ws')}/mcs/ws`
+
+export const API_URL = {
+  MEMBER_PROFILE: `${MEMBER_ORIGIN}/api/mem/member/getProfile`
+}
 
 export const TOAST_DURATION_MS = 5000
 

@@ -4,3 +4,14 @@ export interface ToastData {
   message: string
   roomId: string
 }
+
+export interface UserProfile {
+  integrationMemberNumber: number
+  memberName: string
+  loginId: string
+  customerId: string
+  customerName: string
+  countryCode: string
+  languageCode: string
+  authorities: string[]
+}

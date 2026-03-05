@@ -22,7 +22,10 @@ export interface ChatMessage {
   }
 }
 
-export async function connectWebSocket(onMessage: (data: ToastData) => void): Promise<void> {
+export async function connectWebSocket(
+  memId: string,
+  onMessage: (data: ToastData) => void
+): Promise<void> {
   if (stompClient?.active) return
 
   const cookie = await getAuthCookie()
@@ -36,7 +39,7 @@ export async function connectWebSocket(onMessage: (data: ToastData) => void): Pr
       }) as unknown as globalThis.WebSocket
     },
     connectHeaders: {
-      memId: '10523'
+      memId
     },
     reconnectDelay: 5000,
     debug: (msg) => console.log('[STOMP]', msg),
@@ -44,7 +47,7 @@ export async function connectWebSocket(onMessage: (data: ToastData) => void): Pr
     onStompError: (frame) => console.error('[STOMP Error]', frame.headers.message, frame.body),
     onConnect: () => {
       console.log('[STOMP] Connected successfully')
-      stompClient!.subscribe('/topic/all-message/10523', (frame) => {
+      stompClient!.subscribe(`/topic/all-message/${memId}`, (frame) => {
         console.log('[STOMP] Received message:', frame.body)
         try {
           const msg: ChatMessage = JSON.parse(frame.body)

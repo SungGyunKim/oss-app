@@ -6,6 +6,7 @@ import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
 import { registerIpcHandlers } from './ipc-handlers'
 import { connectWebSocket, disconnectWebSocket } from './post-websocket'
+import { fetchCurrentUser, getCurrentUser, isBusiness, clearCurrentUser } from './current-user'
 import { ToastData } from '../shared/types'
 
 let loggedIn = false
@@ -136,13 +137,17 @@ async function handleLogin(): Promise<void> {
 
   showMain()
 
-  // Connect WebSocket for notifications
-  await connectWebSocket(showToast)
+  // Fetch profile and connect WebSocket for notifications
+  await fetchCurrentUser()
+  const currentUser = getCurrentUser()!
+  const memId = isBusiness() ? currentUser.customerId : String(currentUser.integrationMemberNumber)
+  await connectWebSocket(memId, showToast)
 }
 
 async function handleLogout(): Promise<void> {
   loggedIn = false
   disconnectWebSocket()
+  clearCurrentUser()
   updateTrayMenu(false)
 
   // Call logout URL
@@ -200,7 +205,10 @@ app.whenReady().then(async () => {
 
   if (loggedIn) {
     showMain()
-    await connectWebSocket(showToast)
+    await fetchCurrentUser()
+    const currentUser = getCurrentUser()!
+    const memId = isBusiness() ? currentUser.customerId : String(currentUser.integrationMemberNumber)
+    await connectWebSocket(memId, showToast)
   } else {
     showLogin()
   }
