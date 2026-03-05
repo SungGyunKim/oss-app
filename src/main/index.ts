@@ -1,6 +1,6 @@
-import { app, screen, session, net, ipcMain, BrowserWindow } from 'electron'
+import { app, screen, net, ipcMain, BrowserWindow } from 'electron'
 import path from 'path'
-import { URL, MCS_ORIGIN, WINDOW_CONFIG, TOAST_DURATION_MS, APP_USER_AGENT } from '../shared/config'
+import { URL, MCS_ORIGIN, WINDOW_CONFIG, TOAST_DURATION_MS } from '../shared/config'
 import { isLoggedIn, onAuthChange } from './auth'
 import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
@@ -159,13 +159,6 @@ async function handleSessionExpired(): Promise<void> {
 }
 
 app.whenReady().then(async () => {
-  // Set User-Agent globally
-  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
-    details.requestHeaders['User-Agent'] =
-      (details.requestHeaders['User-Agent'] || '') + ' ' + APP_USER_AGENT
-    callback({ requestHeaders: details.requestHeaders })
-  })
-
   // Register IPC handlers
   registerIpcHandlers({
     onSessionExpired: handleSessionExpired,

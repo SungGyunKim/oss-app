@@ -15,8 +15,6 @@ export const URL = {
 
 export const WS_POST_URL = `${MCS_ORIGIN.replace(/^http/, 'ws')}/mcs/ws`
 
-export const APP_USER_AGENT = 'osstem-desktop-app:1.0.0'
-
 export const TOAST_DURATION_MS = 5000
 
 export const WINDOW_CONFIG = {

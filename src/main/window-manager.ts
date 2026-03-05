@@ -1,6 +1,5 @@
 import { BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
 import path from 'path'
-import { APP_USER_AGENT } from '../shared/config'
 
 const windows = new Map<string, BrowserWindow>()
 
@@ -31,8 +30,6 @@ export function createWindow(
       ...options.webPreferences
     }
   })
-
-  win.webContents.setUserAgent(win.webContents.getUserAgent() + ' ' + APP_USER_AGENT)
 
   win.setMenuBarVisibility(false)
 
