@@ -1,4 +1,5 @@
-import { session } from 'electron'
+import { net, session } from 'electron'
+import { URL } from '../shared/config'
 
 const TOKEN_NAME = 'osstem_token'
 
@@ -32,4 +33,13 @@ export async function getAuthCookie(): Promise<string | undefined> {
   const cookies = await getAllCookies()
   if (!cookies.some((c) => c.name === TOKEN_NAME)) return undefined
   return cookies.map((c) => `${c.name}=${c.value}`).join('; ')
+}
+
+export async function logout(): Promise<void> {
+  await net.fetch(URL.LOGOUT)
+  const cookies = session.defaultSession.cookies
+  await Promise.all([
+    cookies.remove('https://denall.com', TOKEN_NAME),
+    cookies.remove('https://osstem.com', TOKEN_NAME)
+  ])
 }

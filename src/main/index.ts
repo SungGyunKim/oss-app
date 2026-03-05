@@ -1,7 +1,7 @@
-import { app, screen, net, ipcMain, BrowserWindow } from 'electron'
+import { app, screen, ipcMain, BrowserWindow } from 'electron'
 import path from 'path'
 import { URL, MCS_ORIGIN, WINDOW_CONFIG, TOAST_DURATION_MS } from '../shared/config'
-import { isLoggedIn, onAuthChange } from './auth'
+import { isLoggedIn, onAuthChange, logout } from './auth'
 import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
 import { registerIpcHandlers } from './ipc-handlers'
@@ -149,12 +149,7 @@ async function handleLogout(): Promise<void> {
   disconnectWebSocket()
   clearCurrentUser()
   updateTrayMenu(false)
-
-  // Call logout URL
-  const request = net.request(URL.LOGOUT)
-  request.on('error', () => {})
-  request.end()
-
+  await logout()
   windowManager.closeAll()
   showLogin()
 }
@@ -207,7 +202,9 @@ app.whenReady().then(async () => {
     showMain()
     await fetchCurrentUser()
     const currentUser = getCurrentUser()!
-    const memId = isBusiness() ? currentUser.customerId : String(currentUser.integrationMemberNumber)
+    const memId = isBusiness()
+      ? currentUser.customerId
+      : String(currentUser.integrationMemberNumber)
     await connectWebSocket(memId, showToast)
   } else {
     showLogin()
