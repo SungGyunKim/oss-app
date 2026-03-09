@@ -47,7 +47,7 @@ body {
 }
 
 #settings-menu li.active {
-  background: #4a76a8;
+  background: #eb6100;
   color: #fff;
   border-radius: 4px;
   margin: 0 8px;
@@ -135,7 +135,7 @@ body {
 }
 
 .toggle input:checked + .toggle-slider {
-  background: #4a76a8;
+  background: #eb6100;
 }
 
 .toggle input:checked + .toggle-slider::before {
