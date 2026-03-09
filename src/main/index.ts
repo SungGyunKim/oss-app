@@ -97,8 +97,21 @@ function showPostRoom(roomId: string): void {
   )
 }
 
+const activeToasts = new Map<string, { win: BrowserWindow; timer: ReturnType<typeof setTimeout> }>()
+
 function showToast(data: ToastData): void {
   incrementUnread()
+
+  // Reuse existing toast for same roomId
+  const existing = activeToasts.get(data.roomId)
+  if (existing && !existing.win.isDestroyed()) {
+    existing.win.webContents.postMessage('toast-data', data)
+    clearTimeout(existing.timer)
+    existing.timer = setTimeout(() => {
+      if (!existing.win.isDestroyed()) existing.win.close()
+    }, TOAST_DURATION_MS)
+    return
+  }
 
   const { workArea } = screen.getPrimaryDisplay()
   let clicked = false
@@ -137,17 +150,20 @@ function showToast(data: ToastData): void {
   }
   ipcMain.on('toast-clicked', onToastClicked)
 
+  const timer = setTimeout(() => {
+    if (!win.isDestroyed()) win.close()
+  }, TOAST_DURATION_MS)
+
+  activeToasts.set(data.roomId, { win, timer })
+
   win.on('closed', () => {
     ipcMain.removeListener('toast-clicked', onToastClicked)
+    activeToasts.delete(data.roomId)
     if (clicked) {
       resetUnread()
       showPostRoom(data.roomId)
     }
   })
-
-  setTimeout(() => {
-    if (!win.isDestroyed()) win.close()
-  }, TOAST_DURATION_MS)
 }
 
 async function handleLogin(): Promise<void> {
