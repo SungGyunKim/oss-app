@@ -6,7 +6,6 @@ let tray: Tray | null = null
 interface TrayCallbacks {
   onLogin: () => void
   onOpenApp: () => void
-  onProfile: () => void
   onLogout: () => void
 }
 
@@ -39,7 +38,6 @@ export function updateTrayMenu(loggedIn: boolean): void {
   const menu = loggedIn
     ? Menu.buildFromTemplate([
         { label: '앱 열기', click: () => callbacks.onOpenApp() },
-        { label: '계정정보 관리', click: () => callbacks.onProfile() },
         { type: 'separator' },
         { label: '로그아웃', click: () => callbacks.onLogout() },
         { type: 'separator' },

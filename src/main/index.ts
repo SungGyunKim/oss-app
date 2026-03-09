@@ -48,17 +48,6 @@ function showMain(): void {
   })
 }
 
-function showProfile(): void {
-  windowManager.createWindow(
-    'profile',
-    {
-      width: WINDOW_CONFIG.profile.width,
-      height: WINDOW_CONFIG.profile.height,
-      resizable: false
-    },
-    URL.PROFILE
-  )
-}
 
 function showPostRoom(roomId: string): void {
   const postRoomUrl = `${MCS_ORIGIN}/talk/?roomId=${roomId}`
@@ -158,6 +147,28 @@ async function handleSessionExpired(): Promise<void> {
   await handleLogout()
 }
 
+// Single instance lock — prevent duplicate processes
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on('second-instance', async () => {
+    if (await isLoggedIn()) {
+      const main = windowManager.getWindow('main')
+      if (main) {
+        if (main.isMinimized()) main.restore()
+        main.show()
+        main.focus()
+      } else {
+        showMain()
+      }
+    } else {
+      showLogin()
+    }
+  })
+}
+
 app.whenReady().then(async () => {
   // Register IPC handlers
   registerIpcHandlers({
@@ -183,7 +194,6 @@ app.whenReady().then(async () => {
         showLogin()
       }
     },
-    onProfile: () => showProfile(),
     onLogout: () => handleLogout()
   })
 

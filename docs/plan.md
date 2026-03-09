@@ -80,7 +80,6 @@ const JOB_ORIGIN = import.meta.env.VITE_JOB_ORIGIN;
 export const URL = {
   LOGIN: `${MEMBER_ORIGIN}/sso-login?channel-id=Mcs`,
   LOGOUT: `${MEMBER_ORIGIN}/sso-logout?channel-id=Mcs`,
-  PROFILE: `${MEMBER_ORIGIN}/profile-password-verify?channel-id=Mcs`,
   BOOK: `${MCS_ORIGIN}/desktop/book`,
   CRM: `${MCS_ORIGIN}/desktop/crm`,
   POST: `${MCS_ORIGIN}/desktop/talk`,
@@ -145,7 +144,6 @@ nsis:
 | ------------------------ | ------------------------------------------------------------------ | ------------------ |
 | 통합회원 (로그인)        | `https://member.denall.com/sso-login?channel-id=Mcs`               | 로그인             |
 | 통합회원 (로그아웃)      | `https://member.denall.com/sso-logout?channel-id=Mcs`              | 로그아웃           |
-| 통합회원 (계정정보 관리) | `https://member.denall.com/profile-password-verify?channel-id=Mcs` | 계정정보 관리      |
 | BOOK                     | `https://mcs.denall.com/desktop/book`                              | 사이드바 > BOOK    |
 | CRM                      | `https://mcs.denall.com/desktop/crm`                               | 사이드바 > CRM     |
 | POST                     | `https://mcs.denall.com/desktop/talk`                              | 사이드바 > POST    |
@@ -251,7 +249,6 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 | ------------- | :------: | :----: |
 | 로그인        |    O     |   X    |
 | 앱 열기       |    X     |   O    |
-| 계정정보 관리 |    X     |   O    |
 | 로그아웃      |    X     |   O    |
 | 종료          |    O     |   O    |
 
@@ -266,16 +263,15 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 
 `Map<string, BrowserWindow>` 기반 윈도우 레지스트리로 모든 창을 관리한다.
 
-- 로그인, 메인(사이드바+webview), 계정정보 관리, 채팅방을 각각 **별도 BrowserWindow**로 생성
+- 로그인, 메인(사이드바+webview), 채팅방을 각각 **별도 BrowserWindow**로 생성
 - **중복 방지**: 이미 열린 창이 있으면 새로 생성하지 않고 `focus()` 처리
 - `closed` 이벤트에서 레지스트리에서 자동 제거
 - 로그아웃 시 `closeAllWindows()`로 모든 웹뷰 일괄 종료
-- 계정정보 관리는 트레이 메뉴에서 클릭 시 **새 창으로 열기** (메인 창과 별도)
 - **채팅방 전용 창**: 웹에서 `openPostRoom(roomId)` 호출 시 전용 BrowserWindow를 열고 `${MCS_ORIGIN}/talk/?roomId={roomId}` 로드 (roomId는 main 프로세스에서 문자열 타입 및 형식 검증)
 
 ## 웹뷰 설정
 
-아래 설정은 로그인, 채팅, 계정정보 관리 등 **모든 웹뷰에 동일하게 적용**한다.
+아래 설정은 로그인, 채팅 등 **모든 웹뷰에 동일하게 적용**한다.
 
 - `title: 'OSSTEM'` — 모든 창의 타이틀을 "OSSTEM"으로 통일 (트레이 툴팁, electron-builder productName 포함)
 - `menuBarVisible: false` — 모든 창에서 기본 메뉴바(File, Edit, View...) 숨김
