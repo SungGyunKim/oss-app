@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { ipcMain, app } from 'electron'
 
 interface IpcCallbacks {
   onSessionExpired: () => void
@@ -14,5 +14,14 @@ export function registerIpcHandlers(callbacks: IpcCallbacks): void {
     if (typeof roomId !== 'string' || roomId.trim() === '') return
     if (!/^[\w-]+$/.test(roomId)) return
     callbacks.onShowPostRoom(roomId)
+  })
+
+  ipcMain.handle('get-auto-launch', () => {
+    return app.getLoginItemSettings().openAtLogin
+  })
+
+  ipcMain.handle('set-auto-launch', (_event, enabled: unknown) => {
+    if (typeof enabled !== 'boolean') return
+    app.setLoginItemSettings({ openAtLogin: enabled })
   })
 }

@@ -62,6 +62,27 @@ function showMain(): void {
 }
 
 
+function showSettings(): void {
+  const existing = windowManager.getWindow('settings')
+  if (existing) {
+    existing.focus()
+    return
+  }
+
+  const win = windowManager.createWindow('settings', {
+    width: WINDOW_CONFIG.settings.width,
+    height: WINDOW_CONFIG.settings.height,
+    resizable: false,
+    title: '환경설정'
+  })
+
+  if (process.env.ELECTRON_RENDERER_URL) {
+    win.loadURL(`${process.env.ELECTRON_RENDERER_URL}/settings/`)
+  } else {
+    win.loadFile(path.join(__dirname, '../renderer/settings/index.html'))
+  }
+}
+
 function showPostRoom(roomId: string): void {
   const postRoomUrl = `${MCS_ORIGIN}/talk/?roomId=${roomId}`
   const windowId = `chat-${roomId}`
@@ -211,7 +232,8 @@ app.whenReady().then(async () => {
         showLogin()
       }
     },
-    onLogout: () => handleLogout()
+    onLogout: () => handleLogout(),
+    onSettings: () => showSettings()
   })
 
   // Listen for auth changes

@@ -14,5 +14,8 @@ contextBridge.exposeInMainWorld('osstemDesktopApp', {
   },
   toastClicked: (): void => {
     ipcRenderer.send('toast-clicked')
-  }
+  },
+  getAutoLaunch: (): Promise<boolean> => ipcRenderer.invoke('get-auto-launch'),
+  setAutoLaunch: (enabled: boolean): Promise<void> =>
+    ipcRenderer.invoke('set-auto-launch', enabled)
 })

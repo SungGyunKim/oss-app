@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <title>환경설정</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="settings-app">
+      <nav id="settings-sidebar">
+        <ul id="settings-menu"></ul>
+      </nav>
+      <main id="settings-content">
+        <section data-category="general">
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label">시작 시 자동 실행</span>
+              <span class="setting-description"
+                >Windows 시작 시 OSSTEM을 자동으로 실행합니다.</span
+              >
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="auto-launch-toggle" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </section>
+        <section data-category="notifications" class="hidden">
+          <div class="setting-placeholder">알림 설정이 곧 추가됩니다.</div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="./renderer.ts"></script>
+  </body>
+</html>

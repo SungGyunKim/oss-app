@@ -8,6 +8,7 @@ interface TrayCallbacks {
   onLogin: () => void
   onOpenApp: () => void
   onLogout: () => void
+  onSettings: () => void
 }
 
 let callbacks: TrayCallbacks
@@ -39,14 +40,17 @@ export function updateTrayMenu(loggedIn: boolean): void {
 
   const menu = loggedIn
     ? Menu.buildFromTemplate([
-        { label: '앱 열기', click: () => callbacks.onOpenApp() },
+        { label: '열기', click: () => callbacks.onOpenApp() },
         { type: 'separator' },
+        { label: '환경설정', click: () => callbacks.onSettings() },
         { label: '로그아웃', click: () => callbacks.onLogout() },
         { type: 'separator' },
         { label: '종료', click: () => app.exit() }
       ])
     : Menu.buildFromTemplate([
         { label: '로그인', click: () => callbacks.onLogin() },
+        { type: 'separator' },
+        { label: '설정', click: () => callbacks.onSettings() },
         { type: 'separator' },
         { label: '종료', click: () => app.exit() }
       ])
