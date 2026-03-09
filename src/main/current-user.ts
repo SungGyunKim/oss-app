@@ -18,7 +18,7 @@ export async function fetchCurrentUser(): Promise<UserProfile> {
 
   const json = await response.json()
   currentUser = json.data as UserProfile
-  console.log('[Profile] Fetched:', currentUser.memberName, currentUser.integrationMemberNumber)
+  console.log('[Profile] currentUser:', currentUser)
   return currentUser
 }
 

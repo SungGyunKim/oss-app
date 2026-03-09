@@ -10,8 +10,6 @@ import { connectWebSocket, disconnectWebSocket } from './post-websocket'
 import { fetchCurrentUser, getCurrentUser, isBusiness, clearCurrentUser } from './current-user'
 import { ToastData } from '../shared/types'
 
-let loggedIn = false
-
 function showLogin(): void {
   windowManager.createWindow(
     'login',
@@ -182,7 +180,6 @@ function showToast(data: ToastData): void {
 }
 
 async function handleLogin(): Promise<void> {
-  loggedIn = true
   updateTrayMenu(true)
 
   // Close login window if open
@@ -202,7 +199,6 @@ async function handleLogin(): Promise<void> {
 }
 
 async function handleLogout(): Promise<void> {
-  loggedIn = false
   resetUnread()
   disconnectWebSocket()
   clearCurrentUser()
@@ -252,8 +248,8 @@ app.whenReady().then(async () => {
 
   // Create system tray
   createTray({
-    onLogin: () => {
-      if (!loggedIn) showLogin()
+    onLogin: async () => {
+      if (!(await isLoggedIn())) showLogin()
     },
     onOpenApp: async () => {
       if (await isLoggedIn()) {
@@ -274,16 +270,16 @@ app.whenReady().then(async () => {
 
   // Listen for auth changes
   onAuthChange(async (isNowLoggedIn) => {
-    if (isNowLoggedIn && !loggedIn) {
+    if (isNowLoggedIn) {
       await handleLogin()
     }
   })
 
   // Check initial login state
-  loggedIn = await isLoggedIn()
-  updateTrayMenu(loggedIn)
+  const initiallyLoggedIn = await isLoggedIn()
+  updateTrayMenu(initiallyLoggedIn)
 
-  if (loggedIn) {
+  if (initiallyLoggedIn) {
     showMain()
     await fetchCurrentUser()
     const currentUser = getCurrentUser()!

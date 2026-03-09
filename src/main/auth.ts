@@ -18,6 +18,7 @@ export async function isLoggedIn(): Promise<boolean> {
 
 export function onAuthChange(callback: (loggedIn: boolean) => void): void {
   session.defaultSession.cookies.on('changed', (_event, cookie, _cause, removed) => {
+    console.log('[onAuthChange] cookie changed:', cookie.name, removed ? 'removed' : 'set')
     if (cookie.name === TOKEN_NAME) {
       callback(!removed)
     }
@@ -37,9 +38,4 @@ export async function getAuthCookie(): Promise<string | undefined> {
 
 export async function logout(): Promise<void> {
   await net.fetch(URL.LOGOUT)
-  const cookies = session.defaultSession.cookies
-  await Promise.all([
-    cookies.remove('https://denall.com', TOKEN_NAME),
-    cookies.remove('https://osstem.com', TOKEN_NAME)
-  ])
 }
