@@ -1,7 +1,6 @@
-import { app, nativeImage, NativeImage } from 'electron'
+import { nativeImage, NativeImage } from 'electron'
 import { deflateSync } from 'zlib'
 import { getWindow } from './window-manager'
-import { updateTrayIcon, getOriginalTrayIcon } from './tray'
 
 let unreadCount = 0
 
@@ -22,15 +21,8 @@ function updateBadgeUI(): void {
   if (unreadCount > 0) {
     const overlay = createBadgeOverlay(unreadCount)
     mainWin?.setOverlayIcon(overlay, `${unreadCount}개의 새 메시지`)
-
-    const trayIcon = createTrayBadgeIcon(unreadCount)
-    if (trayIcon) updateTrayIcon(trayIcon, unreadCount)
-
-    app.dock?.setBadge(String(unreadCount))
   } else {
     mainWin?.setOverlayIcon(null, '')
-    updateTrayIcon(null, 0)
-    app.dock?.setBadge('')
   }
 }
 
@@ -44,37 +36,6 @@ function createBadgeOverlay(count: number): NativeImage {
 
   fillCircle(pixels, size, size / 2, size / 2, size / 2 - 0.5, 237, 28, 36)
   drawTextCentered(pixels, size, text, scale)
-
-  return nativeImage.createFromBuffer(encodePNG(size, size, pixels))
-}
-
-// -- Tray icon with badge (original icon + red badge at top-right) --
-
-function createTrayBadgeIcon(count: number): NativeImage | null {
-  const originalIcon = getOriginalTrayIcon()
-  if (!originalIcon || originalIcon.isEmpty()) return null
-
-  const size = 32
-  const resized = originalIcon.resize({ width: size, height: size })
-
-  // toBitmap() returns BGRA — convert to RGBA for PNG encoding
-  const bgra = resized.toBitmap()
-  const pixels = Buffer.alloc(size * size * 4)
-  for (let i = 0; i < size * size; i++) {
-    const si = i * 4
-    pixels[si] = bgra[si + 2]
-    pixels[si + 1] = bgra[si + 1]
-    pixels[si + 2] = bgra[si]
-    pixels[si + 3] = bgra[si + 3]
-  }
-
-  const text = count > 99 ? '99+' : String(count)
-  const badgeR = text.length > 2 ? 9 : 8
-  const badgeCx = size - badgeR
-  const badgeCy = badgeR
-
-  fillCircle(pixels, size, badgeCx, badgeCy, badgeR, 237, 28, 36)
-  drawTextAt(pixels, size, text, badgeCx, badgeCy)
 
   return nativeImage.createFromBuffer(encodePNG(size, size, pixels))
 }
