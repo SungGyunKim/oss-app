@@ -3,6 +3,7 @@ import WebSocket from 'ws'
 import { WS_POST_URL } from '../shared/config'
 import { ToastData } from '../shared/types'
 import { getAuthCookie, getAuthToken } from './auth'
+import { getCurrentUser, isBusiness } from './current-user'
 
 let stompClient: Client | null = null
 
@@ -51,6 +52,16 @@ export async function connectWebSocket(
         console.log('[STOMP] Received message:', frame.body)
         try {
           const msg: ChatMessage = JSON.parse(frame.body)
+
+          // 같은 사업자(BIZMN) 간 메시지는 토스트 알림 억제
+          if (
+            isBusiness() &&
+            msg.senderProfile.memDvCd === 'BIZMN' &&
+            msg.senderProfile.custId === getCurrentUser()?.customerId
+          ) {
+            return
+          }
+
           onMessage({
             sender: msg.senderProfile.memName,
             sentAt: msg.msgDate,
