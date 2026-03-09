@@ -50,7 +50,7 @@ export function updateTrayMenu(loggedIn: boolean): void {
     : Menu.buildFromTemplate([
         { label: '로그인', click: () => callbacks.onLogin() },
         { type: 'separator' },
-        { label: '설정', click: () => callbacks.onSettings() },
+        { label: '환경설정', click: () => callbacks.onSettings() },
         { type: 'separator' },
         { label: '종료', click: () => app.exit() }
       ])
