@@ -61,7 +61,6 @@ function showMain(): void {
   })
 }
 
-
 function showSettings(): void {
   const existing = windowManager.getWindow('settings')
   if (existing) {
@@ -97,7 +96,19 @@ function showPostRoom(roomId: string): void {
   )
 }
 
+const TOAST_GAP = 10
 const activeToasts = new Map<string, { win: BrowserWindow; timer: ReturnType<typeof setTimeout> }>()
+
+function repositionToasts(): void {
+  const { workArea } = screen.getPrimaryDisplay()
+  let index = 0
+  for (const [, entry] of activeToasts) {
+    if (entry.win.isDestroyed()) continue
+    const y = workArea.y + workArea.height - (WINDOW_CONFIG.toast.height + TOAST_GAP) * (index + 1)
+    entry.win.setPosition(workArea.x + workArea.width - WINDOW_CONFIG.toast.width - TOAST_GAP, y)
+    index++
+  }
+}
 
 function showToast(data: ToastData): void {
   incrementUnread()
@@ -114,13 +125,16 @@ function showToast(data: ToastData): void {
   }
 
   const { workArea } = screen.getPrimaryDisplay()
+  const stackIndex = activeToasts.size
+  const y =
+    workArea.y + workArea.height - (WINDOW_CONFIG.toast.height + TOAST_GAP) * (stackIndex + 1)
   let clicked = false
 
   const win = new BrowserWindow({
     width: WINDOW_CONFIG.toast.width,
     height: WINDOW_CONFIG.toast.height,
-    x: workArea.x + workArea.width - WINDOW_CONFIG.toast.width - 10,
-    y: workArea.y + workArea.height - WINDOW_CONFIG.toast.height - 10,
+    x: workArea.x + workArea.width - WINDOW_CONFIG.toast.width - TOAST_GAP,
+    y,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -163,6 +177,7 @@ function showToast(data: ToastData): void {
       resetUnread()
       showPostRoom(data.roomId)
     }
+    repositionToasts()
   })
 }
 
