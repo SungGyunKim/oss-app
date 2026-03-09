@@ -1,7 +1,8 @@
-import { Tray, Menu, nativeImage, app } from 'electron'
+import { Tray, Menu, nativeImage, NativeImage, app } from 'electron'
 import path from 'path'
 
 let tray: Tray | null = null
+let originalIcon: NativeImage
 
 interface TrayCallbacks {
   onLogin: () => void
@@ -20,7 +21,8 @@ export function createTray(cbs: TrayCallbacks): Tray {
       : path.join(__dirname, '../../assets/icon.ico')
 
   const icon = nativeImage.createFromPath(iconPath)
-  tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon)
+  originalIcon = icon.isEmpty() ? nativeImage.createEmpty() : icon
+  tray = new Tray(originalIcon)
 
   tray.setToolTip('OSSTEM')
 
@@ -50,6 +52,16 @@ export function updateTrayMenu(loggedIn: boolean): void {
       ])
 
   tray.setContextMenu(menu)
+}
+
+export function updateTrayIcon(image: NativeImage | null, unreadCount: number = 0): void {
+  if (!tray) return
+  tray.setImage(image ?? originalIcon)
+  tray.setToolTip(unreadCount > 0 ? `OSSTEM (${unreadCount}개의 새 메시지)` : 'OSSTEM')
+}
+
+export function getOriginalTrayIcon(): NativeImage {
+  return originalIcon
 }
 
 export function destroyTray(): void {

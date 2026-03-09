@@ -4,6 +4,7 @@ import { URL, MCS_ORIGIN, WINDOW_CONFIG, TOAST_DURATION_MS } from '../shared/con
 import { isLoggedIn, onAuthChange, logout } from './auth'
 import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
+import { incrementUnread, resetUnread } from './badge'
 import { registerIpcHandlers } from './ipc-handlers'
 import { connectWebSocket, disconnectWebSocket } from './post-websocket'
 import { fetchCurrentUser, getCurrentUser, isBusiness, clearCurrentUser } from './current-user'
@@ -24,6 +25,13 @@ function showLogin(): void {
 }
 
 function showMain(): void {
+  const existing = windowManager.getWindow('main')
+  if (existing) {
+    existing.show()
+    existing.focus()
+    return
+  }
+
   const win = windowManager.createWindow('main', {
     width: WINDOW_CONFIG.main.width,
     height: WINDOW_CONFIG.main.height,
@@ -46,6 +54,11 @@ function showMain(): void {
     e.preventDefault()
     win.hide()
   })
+
+  // Reset badge when window gains focus
+  win.on('focus', () => {
+    resetUnread()
+  })
 }
 
 
@@ -64,6 +77,8 @@ function showPostRoom(roomId: string): void {
 }
 
 function showToast(data: ToastData): void {
+  incrementUnread()
+
   const { workArea } = screen.getPrimaryDisplay()
   let clicked = false
 
@@ -104,6 +119,7 @@ function showToast(data: ToastData): void {
   win.on('closed', () => {
     ipcMain.removeListener('toast-clicked', onToastClicked)
     if (clicked) {
+      resetUnread()
       showPostRoom(data.roomId)
     }
   })
@@ -135,6 +151,7 @@ async function handleLogin(): Promise<void> {
 
 async function handleLogout(): Promise<void> {
   loggedIn = false
+  resetUnread()
   disconnectWebSocket()
   clearCurrentUser()
   updateTrayMenu(false)

@@ -359,6 +359,26 @@ interface NotificationData {
 }
 ```
 
+### 배지 표시
+
+읽지 않은 메시지 수를 작업 표시줄과 트레이 아이콘에 숫자 배지로 표시한다.
+
+- **Windows 작업 표시줄**: `BrowserWindow.setOverlayIcon(nativeImage, description)` — 16×16 빨간 원 + 흰색 숫자
+- **Windows 트레이 아이콘**: 원본 아이콘에 배지를 합성한 이미지로 `tray.setImage()` 교체
+- **macOS 독 배지**: `app.dock?.setBadge(count)` — 네이티브 지원
+
+```
+WebSocket 메시지 수신 → showToast() → incrementUnread()
+  → tray.setImage(배지 아이콘)
+  → mainWin.setOverlayIcon(배지, "N개의 새 메시지")
+  → app.dock?.setBadge(N)  (macOS)
+
+토스트 클릭 / 메인 창 포커스 / 로그아웃 → resetUnread()
+  → tray.setImage(원본 아이콘)
+  → mainWin.setOverlayIcon(null, "")
+  → app.dock?.setBadge("")  (macOS)
+```
+
 ### 알림 흐름
 
 ```
