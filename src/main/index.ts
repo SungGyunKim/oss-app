@@ -1,4 +1,4 @@
-import { app, screen, ipcMain, BrowserWindow } from 'electron'
+import { app, Menu, screen, ipcMain, BrowserWindow } from 'electron'
 import path from 'path'
 import { URL, MCS_ORIGIN, WINDOW_CONFIG, TOAST_DURATION_MS } from '../shared/config'
 import { isLoggedIn, onAuthChange, logout } from './auth'
@@ -239,6 +239,11 @@ if (!gotTheLock) {
 }
 
 app.whenReady().then(async () => {
+  // 운영 모드에서 기본 메뉴 제거 (DevTools 메뉴 접근 차단)
+  if (app.isPackaged) {
+    Menu.setApplicationMenu(null)
+  }
+
   // Register IPC handlers
   registerIpcHandlers({
     onSessionExpired: handleSessionExpired,

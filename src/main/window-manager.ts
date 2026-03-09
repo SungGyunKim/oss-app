@@ -1,4 +1,4 @@
-import { BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
+import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
 import path from 'path'
 
 const windows = new Map<string, BrowserWindow>()
@@ -32,6 +32,15 @@ export function createWindow(
   })
 
   win.setMenuBarVisibility(false)
+
+  // 운영 모드에서 DevTools 단축키 차단
+  if (app.isPackaged) {
+    win.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12' || (input.control && input.shift && input.key === 'I')) {
+        event.preventDefault()
+      }
+    })
+  }
 
   windows.set(id, win)
 
