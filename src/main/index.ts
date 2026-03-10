@@ -9,6 +9,7 @@ import { registerIpcHandlers } from './ipc-handlers'
 import { connectWebSocket, disconnectWebSocket } from './post-websocket'
 import { fetchCurrentUser, getCurrentUser, isBusiness, clearCurrentUser } from './current-user'
 import { ToastData } from '../shared/types'
+import { getSettings } from './settings'
 
 function showLogin(): void {
   windowManager.createWindow(
@@ -109,6 +110,8 @@ function repositionToasts(): void {
 }
 
 function showToast(data: ToastData): void {
+  if (!getSettings().notification.showToast) return
+
   incrementUnread()
 
   // Reuse existing toast for same roomId

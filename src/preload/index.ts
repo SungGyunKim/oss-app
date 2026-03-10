@@ -17,5 +17,8 @@ contextBridge.exposeInMainWorld('osstemDesktopApp', {
   },
   getAutoLaunch: (): Promise<boolean> => ipcRenderer.invoke('get-auto-launch'),
   setAutoLaunch: (enabled: boolean): Promise<void> =>
-    ipcRenderer.invoke('set-auto-launch', enabled)
+    ipcRenderer.invoke('set-auto-launch', enabled),
+  getSettings: (): Promise<Record<string, unknown>> => ipcRenderer.invoke('get-settings'),
+  updateSettings: (partial: Record<string, unknown>): Promise<Record<string, unknown>> =>
+    ipcRenderer.invoke('update-settings', partial)
 })

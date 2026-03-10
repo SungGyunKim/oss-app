@@ -1,6 +1,8 @@
 declare const osstemDesktopApp: {
   getAutoLaunch: () => Promise<boolean>
   setAutoLaunch: (enabled: boolean) => Promise<void>
+  getSettings: () => Promise<Record<string, unknown>>
+  updateSettings: (partial: Record<string, unknown>) => Promise<Record<string, unknown>>
 }
 
 interface Category {
@@ -53,5 +55,19 @@ async function initAutoLaunch(): Promise<void> {
   })
 }
 
+async function initNotification(): Promise<void> {
+  const toggle = document.getElementById('notification-toggle') as HTMLInputElement
+  const settings = await osstemDesktopApp.getSettings()
+  const notification = (settings.notification ?? {}) as Record<string, unknown>
+  toggle.checked = notification.showToast !== false
+
+  toggle.addEventListener('change', () => {
+    osstemDesktopApp.updateSettings({
+      notification: { ...notification, showToast: toggle.checked }
+    })
+  })
+}
+
 renderMenu()
 initAutoLaunch()
+initNotification()
