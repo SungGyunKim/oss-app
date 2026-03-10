@@ -36,9 +36,11 @@ body {
 
 #settings-menu li {
   padding: 8px 20px;
+  margin: 0 8px;
   cursor: pointer;
   font-size: 14px;
   color: #b9bbbe;
+  border-radius: 4px;
   transition: background 0.15s;
 }
 
@@ -49,9 +51,6 @@ body {
 #settings-menu li.active {
   background: #eb6100;
   color: #fff;
-  border-radius: 4px;
-  margin: 0 8px;
-  padding: 8px 12px;
 }
 
 /* Content */
