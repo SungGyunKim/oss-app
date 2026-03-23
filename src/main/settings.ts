@@ -2,15 +2,23 @@ import { app } from 'electron'
 import path from 'path'
 import fs from 'fs'
 
+export interface GeneralSettings {
+  autoLaunchInitialized: boolean
+}
+
 export interface NotificationSettings {
   showToast: boolean
 }
 
 export interface Settings {
+  general: GeneralSettings
   notification: NotificationSettings
 }
 
 const DEFAULTS: Settings = {
+  general: {
+    autoLaunchInitialized: false
+  },
   notification: {
     showToast: true
   }
@@ -20,11 +28,11 @@ const filePath = path.join(app.getPath('userData'), 'settings.json')
 
 let cache: Settings | null = null
 
-function deepMerge<T extends Record<string, unknown>>(base: T, override: Record<string, unknown>): T {
+function deepMerge<T extends object>(base: T, override: object): T {
   const result = { ...base } as Record<string, unknown>
   for (const key of Object.keys(override)) {
     const baseVal = result[key]
-    const overVal = override[key]
+    const overVal = (override as Record<string, unknown>)[key]
     if (
       baseVal &&
       overVal &&
@@ -33,10 +41,7 @@ function deepMerge<T extends Record<string, unknown>>(base: T, override: Record<
       !Array.isArray(baseVal) &&
       !Array.isArray(overVal)
     ) {
-      result[key] = deepMerge(
-        baseVal as Record<string, unknown>,
-        overVal as Record<string, unknown>
-      )
+      result[key] = deepMerge(baseVal as object, overVal as object)
     } else {
       result[key] = overVal
     }

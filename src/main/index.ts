@@ -9,7 +9,7 @@ import { registerIpcHandlers } from './ipc-handlers'
 import { connectWebSocket, disconnectWebSocket } from './post-websocket'
 import { fetchCurrentUser, getCurrentUser, isBusiness, clearCurrentUser } from './current-user'
 import { ToastData } from '../shared/types'
-import { getSettings } from './settings'
+import { getSettings, updateSettings } from './settings'
 
 function showLogin(): void {
   windowManager.createWindow(
@@ -241,6 +241,13 @@ app.whenReady().then(async () => {
   // 운영 모드에서 기본 메뉴 제거 (DevTools 메뉴 접근 차단)
   if (app.isPackaged) {
     Menu.setApplicationMenu(null)
+  }
+
+  // 첫 설치 시 자동 실행 활성화
+  const settings = getSettings()
+  if (!settings.general.autoLaunchInitialized) {
+    app.setLoginItemSettings({ openAtLogin: true })
+    updateSettings({ general: { autoLaunchInitialized: true } })
   }
 
   // Register IPC handlers
