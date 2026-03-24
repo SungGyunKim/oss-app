@@ -357,7 +357,7 @@ main 프로세스에서 직접 WebSocket에 연결해 메시지를 수신한다.
 - **연결 URL**: `wss://{MCS_ORIGIN}/mcs/ws`
 - **인증**: Electron 세션에서 해당 도메인의 모든 쿠키를 추출해 WebSocket 핸드셰이크 헤더로 전달하고, STOMP CONNECT 프레임에 `memId`를 포함
 - **구독**: 연결 완료 후 `/topic/all-message/{memId}` 토픽을 구독하여 메시지 수신
-- **연결 시점**: 로그인 완료 후 WebSocket 연결, 로그아웃 시 연결 해제
+- **연결 시점**: 로그인 후 2차 인증(MFA) 완료 시에만 WebSocket 연결. `osstem_token` 변경을 감지하여 프로필을 재조회하고, `isMfa: true`이면 연결, `false`이면 해제. 토큰 제거(로그아웃) 시에도 해제
 
 **WebSocket 수신 메시지 구조 (참고)**
 
