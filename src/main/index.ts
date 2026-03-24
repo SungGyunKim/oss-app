@@ -211,10 +211,6 @@ async function handleLogout(): Promise<void> {
   showLogin()
 }
 
-async function handleSessionExpired(): Promise<void> {
-  await handleLogout()
-}
-
 // Single instance lock — prevent duplicate processes
 const gotTheLock = app.requestSingleInstanceLock()
 
@@ -252,7 +248,6 @@ app.whenReady().then(async () => {
 
   // Register IPC handlers
   registerIpcHandlers({
-    onSessionExpired: handleSessionExpired,
     onShowPostRoom: showPostRoom
   })
 

@@ -2,15 +2,10 @@ import { ipcMain, app } from 'electron'
 import { getSettings, updateSettings, Settings } from './settings'
 
 interface IpcCallbacks {
-  onSessionExpired: () => void
   onShowPostRoom: (roomId: string) => void
 }
 
 export function registerIpcHandlers(callbacks: IpcCallbacks): void {
-  ipcMain.on('session-expired', () => {
-    callbacks.onSessionExpired()
-  })
-
   ipcMain.on('open-post-room', (_event, roomId: unknown) => {
     if (typeof roomId !== 'string' || roomId.trim() === '') return
     if (!/^[\w-]+$/.test(roomId)) return
