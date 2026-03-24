@@ -106,29 +106,32 @@ export function startPostWebSocket(onMessage: (data: ToastData) => void): void {
   }
 
   console.log('[STOMP] MFA not verified, waiting for token change...')
-  let lastToken: string | undefined
   const listener = async (
     _event: Electron.Event,
     cookie: Electron.Cookie,
     _cause: string,
     removed: boolean
   ): Promise<void> => {
-    if (cookie.name !== TOKEN_NAME || removed) return
-    if (lastToken && cookie.value !== lastToken) {
-      console.log('[STOMP] Token changed, re-fetching profile...')
-      await fetchCurrentUser()
-      const updatedUser = getCurrentUser()
-      console.log('[STOMP] Profile re-fetched, isMfa:', updatedUser?.isMfa)
-      if (updatedUser?.isMfa) {
-        const memId = isBusiness()
-          ? updatedUser.customerId
-          : String(updatedUser.integrationMemberNumber)
-        console.log('[STOMP] MFA confirmed, connecting WebSocket (memId:', memId, ')')
-        await connectWebSocket(memId, onMessage)
-        session.defaultSession.cookies.removeListener('changed', listener)
-      }
+    if (cookie.name !== TOKEN_NAME) return
+    if (removed) {
+      console.log('[STOMP] Token removed, disconnecting WebSocket')
+      disconnectWebSocket()
+      return
     }
-    lastToken = cookie.value
+    console.log('[STOMP] Token changed, re-fetching profile...')
+    await fetchCurrentUser()
+    const updatedUser = getCurrentUser()
+    console.log('[STOMP] Profile re-fetched, isMfa:', updatedUser?.isMfa)
+    if (updatedUser?.isMfa) {
+      const memId = isBusiness()
+        ? updatedUser.customerId
+        : String(updatedUser.integrationMemberNumber)
+      console.log('[STOMP] MFA confirmed, connecting WebSocket (memId:', memId, ')')
+      await connectWebSocket(memId, onMessage)
+    } else {
+      console.log('[STOMP] MFA not verified, disconnecting WebSocket')
+      disconnectWebSocket()
+    }
   }
   session.defaultSession.cookies.on('changed', listener)
 }
