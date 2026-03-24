@@ -14,4 +14,5 @@ export interface UserProfile {
   countryCode: string
   languageCode: string
   authorities: string[]
+  isMfa: boolean
 }

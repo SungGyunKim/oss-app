@@ -6,8 +6,8 @@ import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
 import { incrementUnread, resetUnread } from './badge'
 import { registerIpcHandlers } from './ipc-handlers'
-import { connectWebSocket, disconnectWebSocket } from './post-websocket'
-import { fetchCurrentUser, getCurrentUser, isBusiness, clearCurrentUser } from './current-user'
+import { disconnectWebSocket, startPostWebSocket } from './post-websocket'
+import { fetchCurrentUser, clearCurrentUser } from './current-user'
 import { ToastData } from '../shared/types'
 import { getSettings, updateSettings } from './settings'
 
@@ -194,11 +194,9 @@ async function handleLogin(): Promise<void> {
 
   showMain()
 
-  // Fetch profile and connect WebSocket for notifications
+  // Fetch profile and connect WebSocket if MFA verified
   await fetchCurrentUser()
-  const currentUser = getCurrentUser()!
-  const memId = isBusiness() ? currentUser.customerId : String(currentUser.integrationMemberNumber)
-  await connectWebSocket(memId, showToast)
+  startPostWebSocket(showToast)
 }
 
 async function handleLogout(): Promise<void> {
@@ -287,11 +285,7 @@ app.whenReady().then(async () => {
   if (initiallyLoggedIn) {
     showMain()
     await fetchCurrentUser()
-    const currentUser = getCurrentUser()!
-    const memId = isBusiness()
-      ? currentUser.customerId
-      : String(currentUser.integrationMemberNumber)
-    await connectWebSocket(memId, showToast)
+    startPostWebSocket(showToast)
   } else {
     showLogin()
   }
