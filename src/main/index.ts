@@ -285,16 +285,18 @@ app.whenReady().then(async () => {
         await handleLogin()
       }
     } else {
+      // 토큰 갱신 중 제거 이벤트는 무시 (갱신 과정에서 기존 토큰이 먼저 제거됨)
+      if (isTokenRefresh) return
       // osstem_token 만료 — 로그인 유지 여부 확인 후 갱신 시도
       if (await hasKeepLogin()) {
-        console.log('[main] keep-login enabled — attempting token refresh')
+        console.log('[main] keep-login enabled - attempting token refresh')
         const refreshed = await refreshToken()
         if (!refreshed) {
-          console.log('[main] token refresh failed — logging out')
+          console.log('[main] token refresh failed - logging out')
           await handleLogout()
         }
       } else {
-        console.log('[main] keep-login not set — logging out')
+        console.log('[main] keep-login not set - logging out')
         await handleLogout()
       }
     }

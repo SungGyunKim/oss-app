@@ -7,6 +7,9 @@ import { getAuthCookie, getAuthToken } from './auth'
 import { fetchCurrentUser, getCurrentUser, isBusiness } from './current-user'
 
 let stompClient: Client | null = null
+let tokenListener:
+  | ((event: Electron.Event, cookie: Electron.Cookie, cause: string, removed: boolean) => void)
+  | null = null
 
 export interface ChatMessage {
   msgId: string
@@ -79,9 +82,18 @@ export async function connectWebSocket(
   stompClient.activate()
 }
 
+function removeTokenListener(): void {
+  if (tokenListener) {
+    session.defaultSession.cookies.removeListener('changed', tokenListener)
+    tokenListener = null
+  }
+}
+
 export function disconnectWebSocket(): void {
+  removeTokenListener()
   if (stompClient?.active) {
     stompClient.deactivate()
+    console.log('[STOMP] Token removed, disconnecting WebSocket')
   }
   stompClient = null
 }
@@ -102,11 +114,11 @@ export function startPostWebSocket(onMessage: (data: ToastData) => void): void {
     const memId = isBusiness() ? user.customerId : String(user.integrationMemberNumber)
     console.log('[STOMP] MFA verified, connecting WebSocket (memId:', memId, ')')
     connectWebSocket(memId, onMessage)
-    return
   }
 
-  console.log('[STOMP] MFA not verified, waiting for token change...')
-  const listener = async (
+  // MFA 여부와 관계없이 토큰 변경 감시 (갱신된 토큰의 isMfa 재확인용)
+  removeTokenListener()
+  tokenListener = async (
     _event: Electron.Event,
     cookie: Electron.Cookie,
     _cause: string,
@@ -114,7 +126,6 @@ export function startPostWebSocket(onMessage: (data: ToastData) => void): void {
   ): Promise<void> => {
     if (cookie.name !== TOKEN_NAME) return
     if (removed) {
-      console.log('[STOMP] Token removed, disconnecting WebSocket')
       disconnectWebSocket()
       return
     }
@@ -133,5 +144,5 @@ export function startPostWebSocket(onMessage: (data: ToastData) => void): void {
       disconnectWebSocket()
     }
   }
-  session.defaultSession.cookies.on('changed', listener)
+  session.defaultSession.cookies.on('changed', tokenListener)
 }
