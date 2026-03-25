@@ -1,10 +1,11 @@
-import { BrowserWindow, net, session } from 'electron'
+import { BrowserWindow, session } from 'electron'
 import { URL } from '../shared/config'
 
 export const TOKEN_NAME = 'osstem_token'
 const PLYN_NAME = 'plyn'
 
 let isRefreshing = false
+let isLoggingOut = false
 
 async function getAllCookies(): Promise<Electron.Cookie[]> {
   const [denallCookies, osstemCookies] = await Promise.all([
@@ -24,6 +25,17 @@ export async function hasKeepLogin(): Promise<boolean> {
   return cookies.some((c) => c.name === PLYN_NAME && c.value === 'Y')
 }
 
+export async function getAuthToken(): Promise<string | undefined> {
+  const cookies = await getAllCookies()
+  return cookies.find((c) => c.name === TOKEN_NAME)?.value
+}
+
+export async function getAuthCookie(): Promise<string | undefined> {
+  const cookies = await getAllCookies()
+  if (!cookies.some((c) => c.name === TOKEN_NAME)) return undefined
+  return cookies.map((c) => `${c.name}=${c.value}`).join('; ')
+}
+
 export function onAuthChange(
   callback: (isNowLoggedIn: boolean, isTokenRefresh: boolean) => void
 ): void {
@@ -32,7 +44,7 @@ export function onAuthChange(
       console.log('[onAuthChange] cookie changed:', cookie.name, removed ? 'removed' : 'set')
     }
     if (cookie.name === TOKEN_NAME) {
-      callback(!removed, isRefreshing)
+      callback(!removed, isRefreshing || isLoggingOut)
     }
   })
 }
@@ -60,7 +72,7 @@ export async function refreshToken(): Promise<boolean> {
         console.log('[auth] token refresh timed out')
         if (!win.isDestroyed()) win.close()
         resolve(false)
-      }, 15_000)
+      }, 1_000)
 
       // SSO refresh 후 새 osstem_token 쿠키가 설정되면 성공
       const onCookieChanged = (
@@ -88,17 +100,44 @@ export async function refreshToken(): Promise<boolean> {
   }
 }
 
-export async function getAuthToken(): Promise<string | undefined> {
-  const cookies = await getAllCookies()
-  return cookies.find((c) => c.name === TOKEN_NAME)?.value
-}
-
-export async function getAuthCookie(): Promise<string | undefined> {
-  const cookies = await getAllCookies()
-  if (!cookies.some((c) => c.name === TOKEN_NAME)) return undefined
-  return cookies.map((c) => `${c.name}=${c.value}`).join('; ')
-}
-
 export async function logout(): Promise<void> {
-  await net.fetch(URL.LOGOUT)
+  if (isLoggingOut) return
+  isLoggingOut = true
+  console.log('[auth] attempting logout')
+
+  const win = new BrowserWindow({
+    show: false,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  })
+
+  await new Promise<void>((resolve) => {
+    const timeout = setTimeout(() => {
+      console.log('[auth] logout timed out')
+      if (!win.isDestroyed()) win.close()
+      resolve()
+    }, 1_000)
+
+    const onCookieChanged = (
+      _event: Electron.Event,
+      cookie: Electron.Cookie,
+      _cause: string,
+      removed: boolean
+    ): void => {
+      if (cookie.name === TOKEN_NAME && removed) {
+        clearTimeout(timeout)
+        session.defaultSession.cookies.removeListener('changed', onCookieChanged)
+        console.log('[auth] logout succeeded')
+        if (!win.isDestroyed()) win.close()
+        resolve()
+      }
+    }
+
+    session.defaultSession.cookies.on('changed', onCookieChanged)
+    win.loadURL(URL.LOGOUT)
+  })
+
+  isLoggingOut = false
 }
