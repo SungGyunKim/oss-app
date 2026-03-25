@@ -3,6 +3,7 @@ export interface ToastData {
   sentAt: string
   message: string
   roomId: string
+  playSound?: boolean
 }
 
 export interface UserProfile {

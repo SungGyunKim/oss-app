@@ -56,14 +56,22 @@ async function initAutoLaunch(): Promise<void> {
 }
 
 async function initNotification(): Promise<void> {
-  const toggle = document.getElementById('notification-toggle') as HTMLInputElement
   const settings = await osstemDesktopApp.getSettings()
   const notification = (settings.notification ?? {}) as Record<string, unknown>
-  toggle.checked = notification.showToast !== false
 
-  toggle.addEventListener('change', () => {
+  const toastToggle = document.getElementById('notification-toggle') as HTMLInputElement
+  toastToggle.checked = notification.showToast !== false
+  toastToggle.addEventListener('change', () => {
     osstemDesktopApp.updateSettings({
-      notification: { ...notification, showToast: toggle.checked }
+      notification: { showToast: toastToggle.checked }
+    })
+  })
+
+  const soundToggle = document.getElementById('sound-toggle') as HTMLInputElement
+  soundToggle.checked = notification.playSound !== false
+  soundToggle.addEventListener('change', () => {
+    osstemDesktopApp.updateSettings({
+      notification: { playSound: soundToggle.checked }
     })
   })
 }

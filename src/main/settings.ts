@@ -8,6 +8,7 @@ export interface GeneralSettings {
 
 export interface NotificationSettings {
   showToast: boolean
+  playSound: boolean
 }
 
 export interface Settings {
@@ -20,7 +21,8 @@ const DEFAULTS: Settings = {
     autoLaunchInitialized: false
   },
   notification: {
-    showToast: true
+    showToast: true,
+    playSound: true
   }
 }
 

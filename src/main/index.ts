@@ -110,8 +110,10 @@ function repositionToasts(): void {
 }
 
 function showToast(data: ToastData): void {
-  if (!getSettings().notification.showToast) return
+  const settings = getSettings()
+  if (!settings.notification.showToast) return
 
+  data.playSound = settings.notification.playSound !== false
   incrementUnread()
 
   // Reuse existing toast for same roomId
