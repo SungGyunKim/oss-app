@@ -219,7 +219,7 @@ nsis:
    - `plyn === 'Y'` → SSO refresh URL(`{MEMBER_ORIGIN}/sso-refresh?channel-id=Mcs`)을 숨겨진 BrowserWindow에서 로드하여 새 `osstem_token` 발급 (15초 타임아웃)
    - `plyn` 없음 → 모든 창 닫고 로그인 화면 표시 (로그아웃 처리)
 3. 갱신 성공 시 기존 로그인 상태 유지, 실패 시 로그아웃 처리
-4. `isRefreshing` 플래그로 갱신 중 중복 요청 방지
+4. `isRefreshing` 플래그로 갱신 중 중복 요청 방지. 갱신 과정에서 발생하는 토큰 제거 이벤트는 `onAuthChange`에서 무시하여 무한 갱신 루프 방지
 
 ### 로그인 완료 감지
 
@@ -278,7 +278,7 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 ### 로그아웃 흐름
 
 1. 트레이 메뉴 → 로그아웃 클릭
-2. `URL.LOGOUT` 호출 (`https://member.denall.com/sso-logout?channel-id=Mcs`)
+2. 숨겨진 BrowserWindow에서 `URL.LOGOUT` 로드 → 쿠키 정상 제거 대기 (`isLoggingOut` 플래그로 중복 방지)
 3. 모든 웹뷰 종료
 4. 트레이 메뉴를 비로그인 상태로 전환 (로그아웃 메뉴 → 로그인 메뉴)
 
@@ -306,6 +306,7 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 - URL은 소스 코드에 정의된 값만 사용 (사용자 입력 URL 로딩 없음)
 - CSP(Content-Security-Policy) — 모든 renderer HTML에 적용. main은 Bootstrap Icons CDN 허용, settings/toast는 self만 허용
 - 운영 모드(app.isPackaged) DevTools 차단 — `Menu.setApplicationMenu(null)`로 기본 메뉴 제거하여 DevTools 메뉴 접근 차단
+- 외부 URL 처리 — `window.open` 및 현재 창 내 외부 URL 탐색(`will-navigate`)을 가로채 OS 기본 브라우저로 열기. 허용 도메인(`.denall.com`, `.osstem.com`)은 내부 탐색 유지
 
 ```ts
 const win = new BrowserWindow({
@@ -374,7 +375,7 @@ main 프로세스에서 직접 WebSocket에 연결해 메시지를 수신한다.
 - **연결 URL**: `wss://{MCS_ORIGIN}/mcs/ws`
 - **인증**: Electron 세션에서 해당 도메인의 모든 쿠키를 추출해 WebSocket 핸드셰이크 헤더로 전달하고, STOMP CONNECT 프레임에 `memId`를 포함
 - **구독**: 연결 완료 후 `/topic/all-message/{memId}` 토픽을 구독하여 메시지 수신
-- **연결 시점**: 로그인 후 2차 인증(MFA) 완료 시에만 WebSocket 연결. `osstem_token` 변경을 감지하여 프로필을 재조회하고, `isMfa: true`이면 연결, `false`이면 해제. 토큰 제거(로그아웃) 시에도 해제
+- **연결 시점**: 로그인 후 2차 인증(MFA) 완료 시에만 WebSocket 연결. `initPostWebSocket()`으로 앱 시작 시 쿠키 리스너를 1회만 등록하고, `osstem_token` 변경 시 프로필을 재조회하여 `isMfa: true`이면 연결, `false`이면 해제. 토큰 제거(로그아웃) 시에도 해제
 
 **WebSocket 수신 메시지 구조 (참고)**
 
