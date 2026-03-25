@@ -206,6 +206,21 @@ nsis:
 4. 로그인 세션 유지 시간이 길어 대부분 로그인 상태가 유지됨
 5. 사용 중 세션 만료 시 → 웹 서비스가 `window.osstemDesktopApp` IPC로 앱에 알림 → 로그인 화면으로 전환
 
+### 로그인 유지 및 토큰 갱신
+
+- `osstem_token`: 유효기간 12시간. 로그인 성공 시 쿠키에 저장
+- `plyn`: '로그인 유지하기' 선택 시 `'Y'`로 저장
+- `refresh_token`: '로그인 유지하기' 선택 시 유효기간 1년으로 저장
+
+**토큰 갱신 흐름**:
+
+1. `osstem_token` 만료(쿠키 제거) 감지
+2. `plyn` 쿠키 확인
+   - `plyn === 'Y'` → SSO refresh URL(`{MEMBER_ORIGIN}/sso-refresh?channel-id=Mcs`)을 숨겨진 BrowserWindow에서 로드하여 새 `osstem_token` 발급 (15초 타임아웃)
+   - `plyn` 없음 → 모든 창 닫고 로그인 화면 표시 (로그아웃 처리)
+3. 갱신 성공 시 기존 로그인 상태 유지, 실패 시 로그아웃 처리
+4. `isRefreshing` 플래그로 갱신 중 중복 요청 방지
+
 ### 로그인 완료 감지
 
 `osstem_token` 쿠키 생성 이벤트를 감지해 로그인 완료로 판단하고 메인 레이아웃으로 전환한다.
@@ -336,6 +351,7 @@ const win = new BrowserWindow({
 - **형태**: 커스텀 디자인 토스트 (우측 하단)
 - **트리거**: main 프로세스가 WebSocket으로 새 메시지 수신 시
 - **표시 시간**: 5초 후 자동으로 사라짐
+- **알림 소리**: 토스트 표시 시 `assets/toast.mp3` 재생. 환경설정에서 on/off 가능 (기본: on). main 프로세스에서 `playSound` 설정값을 토스트 데이터에 포함하여 renderer에서 재생 여부 결정
 
 ### 토스트 표시 항목
 
@@ -487,6 +503,7 @@ interface Settings {
   }
   notification: {
     showToast: boolean // 토스트 알림 표시 여부
+    playSound: boolean // 알림 소리 재생 여부
   }
 }
 ```
@@ -497,6 +514,7 @@ interface Settings {
 | --------------------------------- | :----: | --------------------------------------------- |
 | `general.autoLaunchInitialized`   | false  | 첫 실행 시 자동 실행 설정 후 true로 변경      |
 | `notification.showToast`          | true   | 토스트 알림 표시                              |
+| `notification.playSound`          | true   | 알림 소리 재생                                |
 
 ### 시작 시 자동 실행 (Auto Launch)
 
@@ -512,6 +530,7 @@ interface Settings {
 | ------- | ---------------- | --------------------------------------- |
 | 일반    | 시작 시 자동실행 | Windows 부팅 시 앱 자동 시작 on/off     |
 | 알림    | 토스트 알림      | 새 메시지 토스트 알림 표시 on/off       |
+| 알림    | 알림 소리        | 새 메시지 수신 시 알림 소리 재생 on/off |
 
 ## 미결정 사항
 
