@@ -1,7 +1,17 @@
-import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
+import { app, BrowserWindow, BrowserWindowConstructorOptions, shell } from 'electron'
 import path from 'path'
 
 const windows = new Map<string, BrowserWindow>()
+const ALLOWED_HOSTS = ['.denall.com', '.osstem.com']
+
+function isAllowedUrl(url: string): boolean {
+  try {
+    const { hostname } = new globalThis.URL(url)
+    return ALLOWED_HOSTS.some((h) => hostname.endsWith(h))
+  } catch {
+    return false
+  }
+}
 
 const defaultWebPreferences: Electron.WebPreferences = {
   preload: path.join(__dirname, '../preload/index.js'),
@@ -32,6 +42,22 @@ export function createWindow(
   })
 
   win.setMenuBarVisibility(false)
+
+  // window.open 호출 시 OS 기본 브라우저로 열기
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    console.log('[window-manager] opening external URL:', url)
+    shell.openExternal(url)
+    return { action: 'deny' }
+  })
+
+  // 외부 URL 탐색 시 OS 기본 브라우저로 열기
+  win.webContents.on('will-navigate', (event, url) => {
+    if (!isAllowedUrl(url)) {
+      event.preventDefault()
+      console.log('[window-manager] redirecting to external browser:', url)
+      shell.openExternal(url)
+    }
+  })
 
   // 운영 모드에서 DevTools 단축키 차단
   if (app.isPackaged) {
