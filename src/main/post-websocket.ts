@@ -3,7 +3,7 @@ import { session } from 'electron'
 import WebSocket from 'ws'
 import { WS_POST_URL } from '../shared/config'
 import { ToastData } from '../shared/types'
-import { getAuthCookie, getAuthToken } from './auth'
+import { getAuthCookie, getAuthToken, TOKEN_NAME } from './auth'
 import { fetchCurrentUser, getCurrentUser, isBusiness } from './current-user'
 
 let stompClient: Client | null = null
@@ -25,11 +25,14 @@ export interface ChatMessage {
   }
 }
 
-export async function connectWebSocket(
-  memId: string,
-  onMessage: (data: ToastData) => void
-): Promise<void> {
+export async function connectWebSocket(): Promise<void> {
   if (stompClient?.active) return
+
+  const user = getCurrentUser()
+  if (!user?.isMfa || !onMessageCallback) return
+
+  const memId = isBusiness() ? user.customerId : String(user.integrationMemberNumber)
+  console.log('[STOMP] Connecting WebSocket (memId:', memId, ')')
 
   const cookie = await getAuthCookie()
   const token = await getAuthToken()
@@ -64,7 +67,7 @@ export async function connectWebSocket(
             return
           }
 
-          onMessage({
+          onMessageCallback!({
             sender: msg.senderProfile.memName,
             sentAt: msg.msgDate,
             message: msg.msgText.text,
@@ -88,8 +91,6 @@ export function disconnectWebSocket(): void {
   stompClient = null
 }
 
-const TOKEN_NAME = 'osstem_token'
-
 /** 앱 시작 시 1회 호출. 쿠키 변경 리스너를 등록하여 토큰 변경 시 WebSocket 연결/해제 처리 */
 export function initPostWebSocket(onMessage: (data: ToastData) => void): void {
   onMessageCallback = onMessage
@@ -104,21 +105,10 @@ export function initPostWebSocket(onMessage: (data: ToastData) => void): void {
     const user = getCurrentUser()
     console.log('[STOMP] Profile re-fetched, isMfa:', user?.isMfa)
     if (user?.isMfa) {
-      const memId = isBusiness() ? user.customerId : String(user.integrationMemberNumber)
-      console.log('[STOMP] MFA confirmed, connecting WebSocket (memId:', memId, ')')
-      await connectWebSocket(memId, onMessageCallback!)
+      await connectWebSocket()
     } else {
       console.log('[STOMP] MFA not verified, disconnecting WebSocket')
       disconnectWebSocket()
     }
   })
-}
-
-/** 로그인 후 호출. MFA 확인 후 즉시 WebSocket 연결 */
-export function startPostWebSocket(): void {
-  const user = getCurrentUser()
-  if (!user?.isMfa || !onMessageCallback) return
-  const memId = isBusiness() ? user.customerId : String(user.integrationMemberNumber)
-  console.log('[STOMP] MFA verified, connecting WebSocket (memId:', memId, ')')
-  connectWebSocket(memId, onMessageCallback)
 }

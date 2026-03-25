@@ -6,7 +6,7 @@ import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
 import { incrementUnread, resetUnread } from './badge'
 import { registerIpcHandlers } from './ipc-handlers'
-import { disconnectWebSocket, initPostWebSocket, startPostWebSocket } from './post-websocket'
+import { disconnectWebSocket, initPostWebSocket, connectWebSocket } from './post-websocket'
 import { fetchCurrentUser, clearCurrentUser } from './current-user'
 import { ToastData } from '../shared/types'
 import { getSettings, updateSettings } from './settings'
@@ -202,7 +202,7 @@ async function handleLogin(): Promise<void> {
 
   // Fetch profile and connect WebSocket if MFA verified
   await fetchCurrentUser()
-  startPostWebSocket()
+  connectWebSocket()
 }
 
 async function handleLogout(): Promise<void> {
@@ -311,7 +311,7 @@ app.whenReady().then(async () => {
   if (initiallyLoggedIn) {
     showMain()
     await fetchCurrentUser()
-    startPostWebSocket()
+    connectWebSocket()
   } else {
     showLogin()
   }

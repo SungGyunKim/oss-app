@@ -1,7 +1,7 @@
 import { BrowserWindow, net, session } from 'electron'
 import { URL } from '../shared/config'
 
-const TOKEN_NAME = 'osstem_token'
+export const TOKEN_NAME = 'osstem_token'
 const PLYN_NAME = 'plyn'
 
 let isRefreshing = false
