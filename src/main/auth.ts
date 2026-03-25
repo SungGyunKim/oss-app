@@ -32,7 +32,7 @@ export async function getAuthToken(): Promise<string | undefined> {
 
 export async function getAuthCookie(): Promise<string | undefined> {
   const cookies = await getAllCookies()
-  if (!cookies.some((c) => c.name === TOKEN_NAME)) return undefined
+  if (!cookies.find((c) => c.name === TOKEN_NAME)) return undefined
   return cookies.map((c) => `${c.name}=${c.value}`).join('; ')
 }
 
@@ -49,6 +49,49 @@ export function onAuthChange(
   })
 }
 
+/** 숨겨진 BrowserWindow에서 URL을 로드하고, osstem_token 쿠키 변경을 감지하여 완료 처리 */
+function loadWithCookieWatch(
+  url: string,
+  tokenRemoved: boolean,
+  timeoutMs: number
+): Promise<boolean> {
+  const win = new BrowserWindow({
+    show: false,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  })
+
+  return new Promise<boolean>((resolve) => {
+    const timeout = setTimeout(() => {
+      cleanup()
+      resolve(false)
+    }, timeoutMs)
+
+    const onCookieChanged = (
+      _event: Electron.Event,
+      cookie: Electron.Cookie,
+      _cause: string,
+      removed: boolean
+    ): void => {
+      if (cookie.name === TOKEN_NAME && removed === tokenRemoved) {
+        cleanup()
+        resolve(true)
+      }
+    }
+
+    function cleanup(): void {
+      clearTimeout(timeout)
+      session.defaultSession.cookies.removeListener('changed', onCookieChanged)
+      if (!win.isDestroyed()) win.close()
+    }
+
+    session.defaultSession.cookies.on('changed', onCookieChanged)
+    win.loadURL(url)
+  })
+}
+
 /**
  * 숨겨진 BrowserWindow에서 SSO refresh URL을 로드하여 osstem_token을 갱신한다.
  * 성공 시 true, 실패 시 false 반환.
@@ -59,41 +102,8 @@ export async function refreshToken(): Promise<boolean> {
   console.log('[auth] attempting token refresh')
 
   try {
-    const win = new BrowserWindow({
-      show: false,
-      webPreferences: {
-        contextIsolation: true,
-        nodeIntegration: false
-      }
-    })
-
-    const success = await new Promise<boolean>((resolve) => {
-      const timeout = setTimeout(() => {
-        console.log('[auth] token refresh timed out')
-        if (!win.isDestroyed()) win.close()
-        resolve(false)
-      }, 1_000)
-
-      // SSO refresh 후 새 osstem_token 쿠키가 설정되면 성공
-      const onCookieChanged = (
-        _event: Electron.Event,
-        cookie: Electron.Cookie,
-        _cause: string,
-        removed: boolean
-      ): void => {
-        if (cookie.name === TOKEN_NAME && !removed) {
-          clearTimeout(timeout)
-          session.defaultSession.cookies.removeListener('changed', onCookieChanged)
-          if (!win.isDestroyed()) win.close()
-          resolve(true)
-        }
-      }
-
-      session.defaultSession.cookies.on('changed', onCookieChanged)
-      win.loadURL(URL.SSO_REFRESH)
-    })
-
-    console.log('[auth] token refresh', success ? 'succeeded' : 'failed')
+    const success = await loadWithCookieWatch(URL.SSO_REFRESH, false, 1_000)
+    console.log('[auth] token refresh', success ? 'succeeded' : 'timed out')
     return success
   } finally {
     isRefreshing = false
@@ -105,39 +115,10 @@ export async function logout(): Promise<void> {
   isLoggingOut = true
   console.log('[auth] attempting logout')
 
-  const win = new BrowserWindow({
-    show: false,
-    webPreferences: {
-      contextIsolation: true,
-      nodeIntegration: false
-    }
-  })
-
-  await new Promise<void>((resolve) => {
-    const timeout = setTimeout(() => {
-      console.log('[auth] logout timed out')
-      if (!win.isDestroyed()) win.close()
-      resolve()
-    }, 1_000)
-
-    const onCookieChanged = (
-      _event: Electron.Event,
-      cookie: Electron.Cookie,
-      _cause: string,
-      removed: boolean
-    ): void => {
-      if (cookie.name === TOKEN_NAME && removed) {
-        clearTimeout(timeout)
-        session.defaultSession.cookies.removeListener('changed', onCookieChanged)
-        console.log('[auth] logout succeeded')
-        if (!win.isDestroyed()) win.close()
-        resolve()
-      }
-    }
-
-    session.defaultSession.cookies.on('changed', onCookieChanged)
-    win.loadURL(URL.LOGOUT)
-  })
-
-  isLoggingOut = false
+  try {
+    const success = await loadWithCookieWatch(URL.LOGOUT, true, 1_000)
+    console.log('[auth] logout', success ? 'succeeded' : 'timed out')
+  } finally {
+    isLoggingOut = false
+  }
 }
