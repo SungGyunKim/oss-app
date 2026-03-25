@@ -1,7 +1,7 @@
 import { app, Menu, screen, ipcMain, BrowserWindow } from 'electron'
 import path from 'path'
 import { URL, MCS_ORIGIN, WINDOW_CONFIG, TOAST_DURATION_MS } from '../shared/config'
-import { isLoggedIn, onAuthChange, logout } from './auth'
+import { isLoggedIn, onAuthChange, logout, hasKeepLogin, refreshToken } from './auth'
 import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
 import { incrementUnread, resetUnread } from './badge'
@@ -272,9 +272,25 @@ app.whenReady().then(async () => {
   })
 
   // Listen for auth changes
-  onAuthChange(async (isNowLoggedIn) => {
+  onAuthChange(async (isNowLoggedIn, isTokenRefresh) => {
     if (isNowLoggedIn) {
-      await handleLogin()
+      // 토큰 갱신에 의한 재설정이면 handleLogin 생략 (이미 로그인 상태)
+      if (!isTokenRefresh) {
+        await handleLogin()
+      }
+    } else {
+      // osstem_token 만료 — 로그인 유지 여부 확인 후 갱신 시도
+      if (await hasKeepLogin()) {
+        console.log('[main] keep-login enabled — attempting token refresh')
+        const refreshed = await refreshToken()
+        if (!refreshed) {
+          console.log('[main] token refresh failed — logging out')
+          await handleLogout()
+        }
+      } else {
+        console.log('[main] keep-login not set — logging out')
+        await handleLogout()
+      }
     }
   })
 

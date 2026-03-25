@@ -5,6 +5,7 @@ const JOB_ORIGIN = import.meta.env.VITE_JOB_ORIGIN
 export const URL = {
   LOGIN: `${MEMBER_ORIGIN}/sso-login?channel-id=Mcs`,
   LOGOUT: `${MEMBER_ORIGIN}/sso-logout?channel-id=Mcs`,
+  SSO_REFRESH: `${MEMBER_ORIGIN}/sso-refresh?channel-id=Mcs`,
   BOOK: `${MCS_ORIGIN}/desktop/book`,
   CRM: `${MCS_ORIGIN}/desktop/crm`,
   POST: `${MCS_ORIGIN}/desktop/talk`,
