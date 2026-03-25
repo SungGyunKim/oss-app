@@ -28,7 +28,9 @@ export function onAuthChange(
   callback: (isNowLoggedIn: boolean, isTokenRefresh: boolean) => void
 ): void {
   session.defaultSession.cookies.on('changed', (_event, cookie, _cause, removed) => {
-    console.log('[onAuthChange] cookie changed:', cookie.name, removed ? 'removed' : 'set')
+    if (!cookie.name.startsWith('_ga')) {
+      console.log('[onAuthChange] cookie changed:', cookie.name, removed ? 'removed' : 'set')
+    }
     if (cookie.name === TOKEN_NAME) {
       callback(!removed, isRefreshing)
     }

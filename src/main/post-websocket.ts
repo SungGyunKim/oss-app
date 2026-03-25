@@ -7,9 +7,7 @@ import { getAuthCookie, getAuthToken } from './auth'
 import { fetchCurrentUser, getCurrentUser, isBusiness } from './current-user'
 
 let stompClient: Client | null = null
-let tokenListener:
-  | ((event: Electron.Event, cookie: Electron.Cookie, cause: string, removed: boolean) => void)
-  | null = null
+let onMessageCallback: ((data: ToastData) => void) | null = null
 
 export interface ChatMessage {
   msgId: string
@@ -82,48 +80,20 @@ export async function connectWebSocket(
   stompClient.activate()
 }
 
-function removeTokenListener(): void {
-  if (tokenListener) {
-    session.defaultSession.cookies.removeListener('changed', tokenListener)
-    tokenListener = null
-  }
-}
-
 export function disconnectWebSocket(): void {
-  removeTokenListener()
   if (stompClient?.active) {
     stompClient.deactivate()
-    console.log('[STOMP] Token removed, disconnecting WebSocket')
+    console.log('[STOMP] Disconnecting WebSocket')
   }
   stompClient = null
 }
 
 const TOKEN_NAME = 'osstem_token'
 
-/** 로그인 후 호출. isMfa면 즉시 연결, 아니면 토큰 변경 대기 후 연결 */
-export function startPostWebSocket(onMessage: (data: ToastData) => void): void {
-  const user = getCurrentUser()
-  if (!user) {
-    console.log('[STOMP] No currentUser, skipping WebSocket connection')
-    return
-  }
-
-  console.log('[STOMP] isMfa:', user.isMfa)
-
-  if (user.isMfa) {
-    const memId = isBusiness() ? user.customerId : String(user.integrationMemberNumber)
-    console.log('[STOMP] MFA verified, connecting WebSocket (memId:', memId, ')')
-    connectWebSocket(memId, onMessage)
-  }
-
-  // MFA 여부와 관계없이 토큰 변경 감시 (갱신된 토큰의 isMfa 재확인용)
-  removeTokenListener()
-  tokenListener = async (
-    _event: Electron.Event,
-    cookie: Electron.Cookie,
-    _cause: string,
-    removed: boolean
-  ): Promise<void> => {
+/** 앱 시작 시 1회 호출. 쿠키 변경 리스너를 등록하여 토큰 변경 시 WebSocket 연결/해제 처리 */
+export function initPostWebSocket(onMessage: (data: ToastData) => void): void {
+  onMessageCallback = onMessage
+  session.defaultSession.cookies.on('changed', async (_event, cookie, _cause, removed) => {
     if (cookie.name !== TOKEN_NAME) return
     if (removed) {
       disconnectWebSocket()
@@ -131,18 +101,24 @@ export function startPostWebSocket(onMessage: (data: ToastData) => void): void {
     }
     console.log('[STOMP] Token changed, re-fetching profile...')
     await fetchCurrentUser()
-    const updatedUser = getCurrentUser()
-    console.log('[STOMP] Profile re-fetched, isMfa:', updatedUser?.isMfa)
-    if (updatedUser?.isMfa) {
-      const memId = isBusiness()
-        ? updatedUser.customerId
-        : String(updatedUser.integrationMemberNumber)
+    const user = getCurrentUser()
+    console.log('[STOMP] Profile re-fetched, isMfa:', user?.isMfa)
+    if (user?.isMfa) {
+      const memId = isBusiness() ? user.customerId : String(user.integrationMemberNumber)
       console.log('[STOMP] MFA confirmed, connecting WebSocket (memId:', memId, ')')
-      await connectWebSocket(memId, onMessage)
+      await connectWebSocket(memId, onMessageCallback!)
     } else {
       console.log('[STOMP] MFA not verified, disconnecting WebSocket')
       disconnectWebSocket()
     }
-  }
-  session.defaultSession.cookies.on('changed', tokenListener)
+  })
+}
+
+/** 로그인 후 호출. MFA 확인 후 즉시 WebSocket 연결 */
+export function startPostWebSocket(): void {
+  const user = getCurrentUser()
+  if (!user?.isMfa || !onMessageCallback) return
+  const memId = isBusiness() ? user.customerId : String(user.integrationMemberNumber)
+  console.log('[STOMP] MFA verified, connecting WebSocket (memId:', memId, ')')
+  connectWebSocket(memId, onMessageCallback)
 }
