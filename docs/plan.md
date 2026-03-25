@@ -352,6 +352,7 @@ const win = new BrowserWindow({
 - **트리거**: main 프로세스가 WebSocket으로 새 메시지 수신 시
 - **표시 시간**: 5초 후 자동으로 사라짐
 - **알림 소리**: 토스트 표시 시 `assets/toast.mp3` 재생. 환경설정에서 on/off 가능 (기본: on). main 프로세스에서 `playSound` 설정값을 토스트 데이터에 포함하여 renderer에서 재생 여부 결정
+- **포커스 시 알림 억제**: 해당 메시지의 대화방(`chat-{roomId}`) 전용 창이 열려 있고 포커스(`isFocused()`)된 상태면 토스트와 소리를 모두 억제
 
 ### 토스트 표시 항목
 

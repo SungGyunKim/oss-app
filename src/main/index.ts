@@ -113,6 +113,10 @@ function showToast(data: ToastData): void {
   const settings = getSettings()
   if (!settings.notification.showToast) return
 
+  // 해당 대화방 전용 창이 포커스 상태면 알림 억제
+  const chatWin = windowManager.getWindow(`chat-${data.roomId}`)
+  if (chatWin && chatWin.isFocused()) return
+
   data.playSound = settings.notification.playSound !== false
   incrementUnread()
 
