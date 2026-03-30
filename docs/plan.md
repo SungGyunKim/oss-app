@@ -62,30 +62,30 @@ VITE_MCS_ORIGIN=https://mcs.denall.com
 VITE_JOB_ORIGIN=https://job.denall.com
 ```
 
-| 변수                         | 설명                                      |
-| ---------------------------- | ----------------------------------------- |
-| `VITE_MEMBER_ORIGIN`         | 통합회원 서비스 도메인                    |
-| `VITE_MCS_ORIGIN`            | MCS 서비스 도메인                         |
-| `VITE_JOB_ORIGIN`            | JOB 서비스 도메인                         |
-| `VITE_OPEN_WEBVIEW_DEVTOOLS` | `true`이면 webview DevTools 자동 열기     |
+| 변수                         | 설명                                  |
+| ---------------------------- | ------------------------------------- |
+| `VITE_MEMBER_ORIGIN`         | 통합회원 서비스 도메인                |
+| `VITE_MCS_ORIGIN`            | MCS 서비스 도메인                     |
+| `VITE_JOB_ORIGIN`            | JOB 서비스 도메인                     |
+| `VITE_OPEN_WEBVIEW_DEVTOOLS` | `true`이면 webview DevTools 자동 열기 |
 
 경로는 소스에서 상수로 관리한다.
 
 ```ts
 // src/shared/config.ts
-const MEMBER_ORIGIN = import.meta.env.VITE_MEMBER_ORIGIN;
-const MCS_ORIGIN = import.meta.env.VITE_MCS_ORIGIN;
-const JOB_ORIGIN = import.meta.env.VITE_JOB_ORIGIN;
+const MEMBER_ORIGIN = import.meta.env.VITE_MEMBER_ORIGIN
+const MCS_ORIGIN = import.meta.env.VITE_MCS_ORIGIN
+const JOB_ORIGIN = import.meta.env.VITE_JOB_ORIGIN
 
 export const URL = {
   LOGIN: `${MEMBER_ORIGIN}/sso-login?channel-id=Mcs`,
   LOGOUT: `${MEMBER_ORIGIN}/sso-logout?channel-id=Mcs`,
   BOOK: `${MCS_ORIGIN}/desktop/book`,
   CRM: `${MCS_ORIGIN}/desktop/crm`,
-  POST: `${MCS_ORIGIN}/desktop/talk`,
+  POST: `${MCS_ORIGIN}/talk`,
   JOB: `${JOB_ORIGIN}`,
-  MY_PAGE: `${MCS_ORIGIN}/desktop/editInfoHost`,
-};
+  MY_PAGE: `${MCS_ORIGIN}/desktop/editInfoHost`
+}
 ```
 
 ### 빌드 스크립트
@@ -140,15 +140,15 @@ nsis:
 
 아래 URL은 운영 환경 기준이며, 환경(stage/production)에 따라 도메인이 달라진다.
 
-| 사이트                   | URL (운영 기준)                                                    | 용도               |
-| ------------------------ | ------------------------------------------------------------------ | ------------------ |
-| 통합회원 (로그인)        | `https://member.denall.com/sso-login?channel-id=Mcs`               | 로그인             |
-| 통합회원 (로그아웃)      | `https://member.denall.com/sso-logout?channel-id=Mcs`              | 로그아웃           |
-| BOOK                     | `https://mcs.denall.com/desktop/book`                              | 사이드바 > BOOK    |
-| CRM                      | `https://mcs.denall.com/desktop/crm`                               | 사이드바 > CRM     |
-| POST                     | `https://mcs.denall.com/desktop/talk`                              | 사이드바 > POST    |
-| JOB                      | `https://job.denall.com`                                           | 사이드바 > JOB     |
-| MY PAGE                  | `https://mcs.denall.com/desktop/editInfoHost`                      | 사이드바 > MY PAGE |
+| 사이트              | URL (운영 기준)                                       | 용도               |
+| ------------------- | ----------------------------------------------------- | ------------------ |
+| 통합회원 (로그인)   | `https://member.denall.com/sso-login?channel-id=Mcs`  | 로그인             |
+| 통합회원 (로그아웃) | `https://member.denall.com/sso-logout?channel-id=Mcs` | 로그아웃           |
+| BOOK                | `https://mcs.denall.com/desktop/book`                 | 사이드바 > BOOK    |
+| CRM                 | `https://mcs.denall.com/desktop/crm`                  | 사이드바 > CRM     |
+| POST                | `https://mcs.denall.com/talk`                         | 사이드바 > POST    |
+| JOB                 | `https://job.denall.com`                              | 사이드바 > JOB     |
+| MY PAGE             | `https://mcs.denall.com/desktop/editInfoHost`         | 사이드바 > MY PAGE |
 
 ## 메인 화면 레이아웃
 
@@ -226,11 +226,11 @@ nsis:
 `osstem_token` 쿠키 생성 이벤트를 감지해 로그인 완료로 판단하고 메인 레이아웃으로 전환한다.
 
 ```ts
-session.defaultSession.cookies.on("changed", (event, cookie, cause) => {
-  if (cookie.name === "osstem_token" && cause === "explicit") {
+session.defaultSession.cookies.on('changed', (event, cookie, cause) => {
+  if (cookie.name === 'osstem_token' && cause === 'explicit') {
     // 로그인 완료 → 메인 레이아웃으로 전환
   }
-});
+})
 ```
 
 > **향후 갱신**: 모바일 앱 개발 부서의 로그인 완료 감지 방식을 참고해 업데이트한다.
@@ -238,12 +238,10 @@ session.defaultSession.cookies.on("changed", (event, cookie, cause) => {
 ```ts
 // 앱 시작 시 로그인 확인
 const [denallCookies, osstemCookies] = await Promise.all([
-  session.defaultSession.cookies.get({ domain: ".denall.com" }),
-  session.defaultSession.cookies.get({ domain: ".osstem.com" }),
-]);
-const isLoggedIn = [...denallCookies, ...osstemCookies].some(
-  (c) => c.name === "osstem_token",
-);
+  session.defaultSession.cookies.get({ domain: '.denall.com' }),
+  session.defaultSession.cookies.get({ domain: '.osstem.com' })
+])
+const isLoggedIn = [...denallCookies, ...osstemCookies].some((c) => c.name === 'osstem_token')
 ```
 
 ## 시스템 트레이
@@ -268,12 +266,12 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 
 ### 트레이 컨텍스트 메뉴 (로그인 상태별)
 
-| 메뉴 항목     | 비로그인 | 로그인 |
-| ------------- | :------: | :----: |
-| 로그인        |    O     |   X    |
-| 앱 열기       |    X     |   O    |
-| 로그아웃      |    X     |   O    |
-| 종료          |    O     |   O    |
+| 메뉴 항목 | 비로그인 | 로그인 |
+| --------- | :------: | :----: |
+| 로그인    |    O     |   X    |
+| 앱 열기   |    X     |   O    |
+| 로그아웃  |    X     |   O    |
+| 종료      |    O     |   O    |
 
 ### 로그아웃 흐름
 
@@ -310,15 +308,15 @@ const isLoggedIn = [...denallCookies, ...osstemCookies].some(
 
 ```ts
 const win = new BrowserWindow({
-  icon: path.join(__dirname, "../../assets/icon.ico"),
+  icon: path.join(__dirname, '../../assets/icon.ico'),
   webPreferences: {
-    preload: path.join(__dirname, "../preload/index.js"),
+    preload: path.join(__dirname, '../preload/index.js'),
     contextIsolation: true,
     nodeIntegration: false,
     backgroundThrottling: false,
-    webviewTag: true,
-  },
-});
+    webviewTag: true
+  }
+})
 ```
 
 > **참고**: WebSocket 연결은 main 프로세스에서 직접 관리한다. `backgroundThrottling: false`는 webview 내부의 UI 갱신 지연을 방지하기 위한 설정이며, 알림용 WebSocket과는 별개이다.
@@ -329,11 +327,11 @@ const win = new BrowserWindow({
 
 ### 역할(authorities)
 
-| 역할         | 구분       | memId 기준                     |
-| ------------ | ---------- | ------------------------------ |
-| `ROLE_INDV`  | 개인 회원  | `integrationMemberNumber`      |
-| `ROLE_BIZMN` | 사업자     | `customerId`                   |
-| `ROLE_STAFF` | 사업자     | `customerId`                   |
+| 역할         | 구분      | memId 기준                |
+| ------------ | --------- | ------------------------- |
+| `ROLE_INDV`  | 개인 회원 | `integrationMemberNumber` |
+| `ROLE_BIZMN` | 사업자    | `customerId`              |
+| `ROLE_STAFF` | 사업자    | `customerId`              |
 
 - `isBusiness()`: `ROLE_BIZMN` 또는 `ROLE_STAFF`이면 사업자로 판별
 - memId는 WebSocket 구독 토픽(`/topic/all-message/{memId}`)에 사용
@@ -404,10 +402,10 @@ main 프로세스에서 직접 WebSocket에 연결해 메시지를 수신한다.
 ```ts
 // main 프로세스에서 WebSocket 메시지 수신 후 토스트에 표시할 데이터
 interface NotificationData {
-  sender: string; // 보낸 사람 이름 (senderProfile.memName)
-  sentAt: string; // 보낸 일시 (msgDate)
-  message: string; // 메시지 (msgText.text)
-  roomId: string; // 토스트 클릭 시 해당 채팅방 포커스 이동용
+  sender: string // 보낸 사람 이름 (senderProfile.memName)
+  sentAt: string // 보낸 일시 (msgDate)
+  message: string // 메시지 (msgText.text)
+  roomId: string // 토스트 클릭 시 해당 채팅방 포커스 이동용
 }
 ```
 
@@ -449,8 +447,8 @@ main 프로세스 (WebSocket 직접 연결)
 
 ```ts
 // 웹 서비스 쪽 (IPC를 모름)
-window.osstemDesktopApp.sessionExpired(); // 세션 만료 → 로그인 화면 전환
-window.osstemDesktopApp.openPostRoom(roomId); // 채팅방 전용 창 열기
+window.osstemDesktopApp.sessionExpired() // 세션 만료 → 로그인 화면 전환
+window.osstemDesktopApp.openPostRoom(roomId) // 채팅방 전용 창 열기
 
 // 내부적으로
 // preload: ipcRenderer.send(...) → main process → 해당 동작 수행
@@ -512,11 +510,11 @@ interface Settings {
 
 ### 기본값
 
-| 항목                              | 기본값 | 설명                                          |
-| --------------------------------- | :----: | --------------------------------------------- |
-| `general.autoLaunchInitialized`   | false  | 첫 실행 시 자동 실행 설정 후 true로 변경      |
-| `notification.showToast`          | true   | 토스트 알림 표시                              |
-| `notification.playSound`          | true   | 알림 소리 재생                                |
+| 항목                            | 기본값 | 설명                                     |
+| ------------------------------- | :----: | ---------------------------------------- |
+| `general.autoLaunchInitialized` | false  | 첫 실행 시 자동 실행 설정 후 true로 변경 |
+| `notification.showToast`        |  true  | 토스트 알림 표시                         |
+| `notification.playSound`        |  true  | 알림 소리 재생                           |
 
 ### 시작 시 자동 실행 (Auto Launch)
 
@@ -528,11 +526,11 @@ interface Settings {
 
 트레이 메뉴 → 환경설정에서 아래 항목을 변경할 수 있다.
 
-| 메뉴    | 항목             | 설명                                    |
-| ------- | ---------------- | --------------------------------------- |
-| 일반    | 시작 시 자동실행 | Windows 부팅 시 앱 자동 시작 on/off     |
-| 알림    | 토스트 알림      | 새 메시지 토스트 알림 표시 on/off       |
-| 알림    | 알림 소리        | 새 메시지 수신 시 알림 소리 재생 on/off |
+| 메뉴 | 항목             | 설명                                    |
+| ---- | ---------------- | --------------------------------------- |
+| 일반 | 시작 시 자동실행 | Windows 부팅 시 앱 자동 시작 on/off     |
+| 알림 | 토스트 알림      | 새 메시지 토스트 알림 표시 on/off       |
+| 알림 | 알림 소리        | 새 메시지 수신 시 알림 소리 재생 on/off |
 
 ## 미결정 사항
 

@@ -8,7 +8,7 @@ export const URL = {
   SSO_REFRESH: `${MEMBER_ORIGIN}/sso-refresh?channel-id=Mcs`,
   BOOK: `${MCS_ORIGIN}/desktop/book`,
   CRM: `${MCS_ORIGIN}/desktop/crm`,
-  POST: `${MCS_ORIGIN}/desktop/talk`,
+  POST: `${MCS_ORIGIN}/talk`,
   JOB: `${JOB_ORIGIN}`,
   MY_PAGE: `${MCS_ORIGIN}/desktop/editInfoHost`
 }
