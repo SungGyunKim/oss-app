@@ -114,6 +114,25 @@ function repositionToasts(): void {
   }
 }
 
+function flashTaskbar(): void {
+  showMain()
+  const mainWin = windowManager.getWindow('main')
+  if (!mainWin) return
+
+  let count = 0
+  const flashInterval = setInterval(() => {
+    if (mainWin.isDestroyed()) {
+      clearInterval(flashInterval)
+      return
+    }
+    mainWin.flashFrame(true)
+    count++
+    if (count >= 3) {
+      clearInterval(flashInterval)
+    }
+  }, 500)
+}
+
 function showToast(data: ToastData): void {
   const settings = getSettings()
   if (!settings.notification.showToast) return
@@ -124,6 +143,8 @@ function showToast(data: ToastData): void {
 
   data.playSound = settings.notification.playSound !== false
   incrementUnread()
+
+  flashTaskbar()
 
   // Reuse existing toast for same roomId
   const existing = activeToasts.get(data.roomId)
