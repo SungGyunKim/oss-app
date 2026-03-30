@@ -125,12 +125,6 @@ function showToast(data: ToastData): void {
   data.playSound = settings.notification.playSound !== false
   incrementUnread()
 
-  // 메시지 수신 시 main 창이 없으면 백그라운드 생성
-  if (!windowManager.getWindow('main')) {
-    showMain()
-    windowManager.getWindow('main')?.hide()
-  }
-
   // Reuse existing toast for same roomId
   const existing = activeToasts.get(data.roomId)
   if (existing && !existing.win.isDestroyed()) {
