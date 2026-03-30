@@ -1,6 +1,6 @@
 import { app, Menu, screen, ipcMain, BrowserWindow } from 'electron'
 import path from 'path'
-import { URL, MCS_ORIGIN, WINDOW_CONFIG, TOAST_DURATION_MS } from '../shared/config'
+import { MCS_ORIGIN, WINDOW_CONFIG, TOAST_DURATION_MS } from '../shared/config'
 import { isLoggedIn, onAuthChange, logout, hasKeepLogin, refreshToken } from './auth'
 import * as windowManager from './window-manager'
 import { createTray, updateTrayMenu, destroyTray } from './tray'
@@ -12,15 +12,20 @@ import { ToastData } from '../shared/types'
 import { getSettings, updateSettings } from './settings'
 
 function showLogin(): void {
-  windowManager.createWindow(
-    'login',
-    {
-      width: WINDOW_CONFIG.login.width,
-      height: WINDOW_CONFIG.login.height,
-      resizable: false
-    },
-    URL.LOGIN
-  )
+  const win = windowManager.createWindow('login', {
+    width: WINDOW_CONFIG.login.width,
+    height: WINDOW_CONFIG.login.height,
+    resizable: false,
+    webPreferences: {
+      webviewTag: true
+    }
+  })
+
+  if (process.env.ELECTRON_RENDERER_URL) {
+    win.loadURL(`${process.env.ELECTRON_RENDERER_URL}/login/`)
+  } else {
+    win.loadFile(path.join(__dirname, '../renderer/login/index.html'))
+  }
 }
 
 function showMain(): void {

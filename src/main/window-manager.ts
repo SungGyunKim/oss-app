@@ -2,13 +2,7 @@ import { app, BrowserWindow, BrowserWindowConstructorOptions, shell } from 'elec
 import path from 'path'
 
 const windows = new Map<string, BrowserWindow>()
-const ALLOWED_HOSTS = [
-  '.denall.com',
-  '.osstem.com',
-  '.naver.com', // SNS 로그인 (네이버)
-  '.kakao.com', // SNS 로그인 (카카오)
-  '.apple.com' // SNS 로그인 (애플)
-]
+const ALLOWED_HOSTS = ['.denall.com', '.osstem.com']
 
 function isAllowedUrl(url: string): boolean {
   try {

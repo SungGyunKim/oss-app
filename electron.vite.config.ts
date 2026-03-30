@@ -30,6 +30,7 @@ export default defineConfig({
       rollupOptions: {
         input: {
           main: resolve(__dirname, 'src/renderer/main/index.html'),
+          login: resolve(__dirname, 'src/renderer/login/index.html'),
           toast: resolve(__dirname, 'src/renderer/toast/index.html'),
           settings: resolve(__dirname, 'src/renderer/settings/index.html')
         }

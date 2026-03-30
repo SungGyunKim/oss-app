@@ -23,7 +23,7 @@ export const TOAST_DURATION_MS = 5000
 
 export const WINDOW_CONFIG = {
   main: { width: 1200, height: 800, minWidth: 800, minHeight: 600 },
-  login: { width: 480, height: 720 },
+  login: { width: 480, height: 750 },
   chat: { width: 500, height: 700 },
   toast: { width: 360, height: 75 },
   settings: { width: 640, height: 440 }
