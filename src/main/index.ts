@@ -59,8 +59,9 @@ function showMain(): void {
     win.hide()
   })
 
-  // Reset badge when window gains focus
+  // Reset badge and flash when window gains focus
   win.on('focus', () => {
+    win.flashFrame(false)
     resetUnread()
   })
 }
@@ -210,6 +211,8 @@ function showToast(data: ToastData): void {
     ipcMain.removeListener('toast-clicked', onToastClicked)
     activeToasts.delete(data.roomId)
     if (clicked) {
+      const mainWin = windowManager.getWindow('main')
+      if (mainWin && !mainWin.isDestroyed()) mainWin.flashFrame(false)
       resetUnread()
       showPostRoom(data.roomId)
     }
