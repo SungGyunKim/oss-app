@@ -139,7 +139,6 @@ function showToast(data: ToastData): void {
   if (chatWin && chatWin.isFocused()) return
 
   data.playSound = settings.notification.playSound !== false
-  incrementUnread()
 
   // 전용 대화방이 있으면 해당 창을, 없으면 main 창을 깜빡임
   if (chatWin) {
@@ -149,6 +148,8 @@ function showToast(data: ToastData): void {
     const mainWin = windowManager.getWindow('main')
     if (mainWin) flashTaskbar(mainWin)
   }
+
+  setTimeout(() => incrementUnread(), 1000)
 
   // Reuse existing toast for same roomId
   const existing = activeToasts.get(data.roomId)
