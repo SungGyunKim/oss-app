@@ -99,7 +99,7 @@ function showPostRoom(roomId: string): void {
   const postRoomUrl = `${MCS_ORIGIN}/talk/?roomId=${roomId}`
   const windowId = `chat-${roomId}`
 
-  windowManager.createWindow(
+  const win = windowManager.createWindow(
     windowId,
     {
       width: WINDOW_CONFIG.chat.width,
@@ -107,6 +107,11 @@ function showPostRoom(roomId: string): void {
     },
     postRoomUrl
   )
+
+  win.on('focus', () => {
+    win.flashFrame(false)
+    resetUnread()
+  })
 }
 
 const TOAST_GAP = 10
