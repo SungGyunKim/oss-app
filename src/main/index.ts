@@ -33,12 +33,10 @@ function showMain(options?: { minimized?: boolean }): void {
 
   const existing = windowManager.getWindow('main')
   if (existing) {
-    existing.show()
-    existing.focus()
-
     if (minimized) {
       existing.minimize()
     } else {
+      existing.show()
       existing.focus()
     }
 
