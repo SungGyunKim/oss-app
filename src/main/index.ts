@@ -28,11 +28,20 @@ function showLogin(): void {
   }
 }
 
-function showMain(): void {
+function showMain(options?: { minimized?: boolean }): void {
+  const minimized = options?.minimized ?? false
+
   const existing = windowManager.getWindow('main')
   if (existing) {
     existing.show()
     existing.focus()
+
+    if (minimized) {
+      existing.minimize()
+    } else {
+      existing.focus()
+    }
+
     return
   }
 
@@ -52,6 +61,8 @@ function showMain(): void {
   } else {
     win.loadFile(path.join(__dirname, '../renderer/main/index.html'))
   }
+
+  if (minimized) win.minimize()
 
   // X button hides instead of closing
   win.on('close', (e) => {
@@ -144,7 +155,7 @@ function notifyTaskbar(roomId: string): void {
   if (chatWin) {
     if (!chatWin.isFocused()) flashTaskbar(chatWin)
   } else {
-    showMain()
+    showMain({ minimized: true })
     const mainWin = windowManager.getWindow('main')
     if (mainWin) flashTaskbar(mainWin)
   }
