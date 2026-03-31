@@ -130,17 +130,17 @@ function flashTaskbar(win: BrowserWindow): void {
   }, 500)
 }
 
-function showToast(data: ToastData): void {
+function shouldSuppressToast(roomId: string): boolean {
   const settings = getSettings()
-  if (!settings.notification.showToast) return
+  if (!settings.notification.showToast) return true
 
-  // 해당 대화방 전용 창이 포커스 상태면 알림 억제
-  const chatWin = windowManager.getWindow(`chat-${data.roomId}`)
-  if (chatWin && chatWin.isFocused()) return
+  const chatWin = windowManager.getWindow(`chat-${roomId}`)
+  return !!chatWin && chatWin.isFocused()
+}
 
-  data.playSound = settings.notification.playSound !== false
+function notifyTaskbar(roomId: string): void {
+  const chatWin = windowManager.getWindow(`chat-${roomId}`)
 
-  // 전용 대화방이 있으면 해당 창을, 없으면 main 창을 깜빡임
   if (chatWin) {
     if (!chatWin.isFocused()) flashTaskbar(chatWin)
   } else {
@@ -150,18 +150,21 @@ function showToast(data: ToastData): void {
   }
 
   setTimeout(() => incrementUnread(), 1000)
+}
 
-  // Reuse existing toast for same roomId
+function updateExistingToast(data: ToastData): boolean {
   const existing = activeToasts.get(data.roomId)
-  if (existing && !existing.win.isDestroyed()) {
-    existing.win.webContents.postMessage('toast-data', data)
-    clearTimeout(existing.timer)
-    existing.timer = setTimeout(() => {
-      if (!existing.win.isDestroyed()) existing.win.close()
-    }, TOAST_DURATION_MS)
-    return
-  }
+  if (!existing || existing.win.isDestroyed()) return false
 
+  existing.win.webContents.postMessage('toast-data', data)
+  clearTimeout(existing.timer)
+  existing.timer = setTimeout(() => {
+    if (!existing.win.isDestroyed()) existing.win.close()
+  }, TOAST_DURATION_MS)
+  return true
+}
+
+function createToastWindow(data: ToastData): void {
   const { workArea } = screen.getPrimaryDisplay()
   const stackIndex = activeToasts.size
   const y =
@@ -219,6 +222,14 @@ function showToast(data: ToastData): void {
     }
     repositionToasts()
   })
+}
+
+function showToast(data: ToastData): void {
+  if (shouldSuppressToast(data.roomId)) return
+
+  data.playSound = getSettings().notification.playSound !== false
+  notifyTaskbar(data.roomId)
+  if (!updateExistingToast(data)) createToastWindow(data)
 }
 
 async function handleLogin(): Promise<void> {
