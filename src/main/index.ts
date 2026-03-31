@@ -114,18 +114,14 @@ function repositionToasts(): void {
   }
 }
 
-function flashTaskbar(): void {
-  showMain()
-  const mainWin = windowManager.getWindow('main')
-  if (!mainWin) return
-
+function flashTaskbar(win: BrowserWindow): void {
   let count = 0
   const flashInterval = setInterval(() => {
-    if (mainWin.isDestroyed()) {
+    if (win.isDestroyed()) {
       clearInterval(flashInterval)
       return
     }
-    mainWin.flashFrame(true)
+    win.flashFrame(true)
     count++
     if (count >= 3) {
       clearInterval(flashInterval)
@@ -144,7 +140,14 @@ function showToast(data: ToastData): void {
   data.playSound = settings.notification.playSound !== false
   incrementUnread()
 
-  flashTaskbar()
+  // 전용 대화방이 있으면 해당 창을, 없으면 main 창을 깜빡임
+  if (chatWin) {
+    if (!chatWin.isFocused()) flashTaskbar(chatWin)
+  } else {
+    showMain()
+    const mainWin = windowManager.getWindow('main')
+    if (mainWin) flashTaskbar(mainWin)
+  }
 
   // Reuse existing toast for same roomId
   const existing = activeToasts.get(data.roomId)
